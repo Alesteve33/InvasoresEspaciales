@@ -6,6 +6,7 @@ class Player:
     def __init__(self, x, y, speed, health):
         self.x = x
         self.y = y
+
         self.speed = speed
         self.size = width, height = 64, 73
         self.health = health
@@ -17,7 +18,8 @@ class Player:
         
         self.player_image = pygame.transform.scale(pygame.image.load("sprites/player_1.png"), self.size)
         self.player_rect = self.player_image.get_rect()
-        
+        self.player_rect.x = self.x
+        self.player_rect.y = self.y
     def render(self, screen):
         screen.blit(self.player_image, self.player_rect)
         self.shield.render(screen)
@@ -62,6 +64,7 @@ class Player:
             self.shield.enableShield()
             
     def shoot(self):
+        print("NIGG")
         if self.time_since_last_shot > self.shoot_cooldown:
             self.time_since_last_shot = 0
             return Bullet(self.player_rect.centerx - 8, self.player_rect.centery - 20, 1000, False)

@@ -54,11 +54,8 @@ class Background:
     def spawnPlanet(self, sw, sh):
         planetNumber = random.randint(1,3)
         randomXPos = random.randint(20, sw-20)
-        print(randomXPos)
         while abs(randomXPos-self.lastPlanetXPos) < 200:
             randomXPos = random.randint(20, sw-200)
-            print(randomXPos)
-            print(self.lastPlanetXPos)
         self.lastPlanetXPos = randomXPos
 
         planetToSpawn = BackgroundElement("planet" + str(planetNumber), randomXPos, -150, sw, sh, self.backgroundElements)

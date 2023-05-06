@@ -6,18 +6,14 @@ from enemyrow import EnemyRow
 class EnemyFactory:
     
     def __init__(self, actualLevelRows):
-        self.spawner_clock = 0
         self.currentLevelRows = 0
         self.actualLevelRows = actualLevelRows
         self.rowsLeft= 0
 
-    def tick(self, dt):
-        self.spawner_clock += dt
         
     def spawnCheck(self, enemyRows):
-        if self.rowsLeft> 0:
+        if self.rowsLeft > 0:
             self.spawn(enemyRows)
-        
     
     def spawnLines(self, minRows, maxRows):
         self.rowsLeft = random.randint(minRows, maxRows)

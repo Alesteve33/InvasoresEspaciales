@@ -22,14 +22,16 @@ class Menu:
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
+                print(event.key)
+                if (event.key == pygame.K_UP and not self.isGameOver):
                     self.buttonSelected -= 1
-                elif event.key == pygame.K_DOWN:
+                elif (event.key == pygame.K_DOWN and not self.isGameOver):
                     self.buttonSelected += 1
-                elif event.key == pygame.K_RETURN:
+                elif (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE) and not self.isGameOver:
                     if self.buttonSelected == 0: #PLAY
                         self.isInMenu = False
-                    elif self.buttonSelected == 1: #SETTINGS
+                        return True
+                    elif self.buttonSelected == 1: #SETTINGS:
                         continue
                     else:
                         pygame.quit()
@@ -40,7 +42,8 @@ class Menu:
                         bullets.clear()
                         #player = Player(100, 585, 250.0, 4)
                         player.health = 4
-                        player.x = 100
+                        player.x = 304
+                        player.tick(deltaTime, bullets)
                         spawner.spawnLines(4, 5)
                         self.isGameOver = False
 

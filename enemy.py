@@ -16,10 +16,9 @@ class Enemy:
         self.time_since_last_shot = 0
         
         self.direction = direction
-        
+        self.canShoot = True
         self.setType(0)
         self.enemy_rect = self.enemy_image.get_rect()
-        
     
     def tick(self, bullets, px, py, deltaTime, bulletRand):
         
@@ -33,7 +32,7 @@ class Enemy:
             b = self.shoot()
             if b is not None:
                 bullets.append(b)
-        elif random.randint(0, 100) > bulletRand:
+        elif random.randint(0, 100) > bulletRand and self.canShoot:
             b = self.shoot()
             if b is not None:
                 bullets.append(b)
