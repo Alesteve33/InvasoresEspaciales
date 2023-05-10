@@ -57,13 +57,19 @@ stats = Stats()
 
 shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
+enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
 
 running = True
 while running:
 
     shoot_sound.set_volume(menu.volume * 0.01)
     explosion_sound.set_volume(menu.volume * 0.01)
+    enemy_killed_sound.set_volume(menu.volume * 0.01)
     menu.menu_select_sound.set_volume(menu.volume * 0.01)
+    menu.game_over_sound.set_volume(menu.volume * 0.01)
+    player.health_sound.set_volume(menu.volume * 0.01)
+    player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
+    player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
 
     if not menu.isInMenu:
         fade.tick()
@@ -152,6 +158,8 @@ while running:
         if player.finishedExplosion:
             menu.isInMenu = True
             menu.isGameOver = True
+
+            menu.game_over_sound.play()
 
             stats.deaths += 1
             if player.score > stats.highScore:
@@ -260,6 +268,8 @@ while running:
             if enemy.health <= 0:
                 removeEnemyList.append(enemy)
                 stats.kills += 1
+
+                enemy_killed_sound.play()
 
     if not enemyRows and enemyFactory.rowsLeft <= 0:
         enemyFactory.spawnLines(4, 5)

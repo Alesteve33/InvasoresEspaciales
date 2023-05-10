@@ -31,6 +31,8 @@ class Player:
         self.player_rect.x = self.x
         self.player_rect.y = self.y
         self.score = 0
+
+        self.health_sound = pygame.mixer.Sound("sounds/health.mp3")
     def render(self, screen, dt):
         if self.currentAnimationFrame < 7:
             screen.blit(self.player_image, self.player_rect)
@@ -68,8 +70,10 @@ class Player:
                     bulletsToDestroy.append(bullet)
                     if self.shield.isEnabled:
                         self.shield.isEnabled = False
+                        self.shield.disableShieldSound.play()
                     else:
                         self.health -= bullet.damage
+                        self.health_sound.play()
         for bullet in bulletsToDestroy:
             bullets.remove(bullet)
 

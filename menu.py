@@ -25,6 +25,10 @@ class Menu:
         self.sh = sh
 
         self.menu_select_sound = pygame.mixer.Sound("sounds/menuSelect.mp3")
+        self.game_over_sound = pygame.mixer.Sound("sounds/gameOver.wav")
+
+        self.biggerFont = pygame.font.SysFont('Comic Sans MS', 60)
+        self.titleFont = pygame.font.SysFont('Arial', 70)
 
         for i in range(self.buttonAmount):
             self.colors.append((255,255,255))
@@ -81,9 +85,11 @@ class Menu:
                     if self.isInSettings:
                         self.isInSettings = False
                         self.buttonSelected = 1
+                        self.menu_select_sound.play()
                     if self.isInStats:
                         self.isInStats = False
                         self.buttonSelected = 2
+                        self.menu_select_sound.play()
                 elif event.key == pygame.K_SPACE:
                     if self.isGameOver:
                         enemyRows.clear()
@@ -140,8 +146,6 @@ class Menu:
             musicText = font.render("Music: " + toggleMusicText, False, self.colors[2])
             exitText = font.render("Go back", False, self.colors[3])
 
-            titleText = font.render("Ship Killer", False, (200, 155, 45))
-
             screen.blit(holdAttackText, (screen.get_size()[0]/2 - font.size("Hold attack: " + toggleAttackText)[0]/2, screen.get_size()[1]/4 + 50))
             screen.blit(volumeText, (screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2, screen.get_size()[1]/4 + 150))
             screen.blit(musicText, (screen.get_size()[0]/2 - font.size("Music: " + toggleMusicText)[0]/2, screen.get_size()[1]/4 + 250))
@@ -176,8 +180,8 @@ class Menu:
             self.skull_rect.y = screen.get_size()[1]/2 - 50
 
             screen.blit(self.skull_image, self.skull_rect)
-            youDiedText = font.render("You died!", False, (255, 30, 30))
-            screen.blit(youDiedText, (screen.get_size()[0]/2 - font.size("You died!")[0]/2, screen.get_size()[1]/2 - 140))
+            youDiedText = self.biggerFont.render("You died!", False, (255, 30, 30))
+            screen.blit(youDiedText, (screen.get_size()[0]/2 - self.biggerFont.size("You died!")[0]/2, screen.get_size()[1]/2 - 180))
 
             scoreText = font.render("Score: " + str(score), False, (255, 255, 255))
             screen.blit(scoreText, (screen.get_size()[0]/2 - font.size("Score: " + str(score))[0]/2, screen.get_size()[1]/2 - 100))
@@ -196,8 +200,8 @@ class Menu:
 
         if self.isInSettings:
             return
-        creditText = font.render("By Daniel Villena and Alejandro Vila", False, (200, 200, 200))
-        screen.blit(creditText, (screen.get_size()[0]/2 - font.size("By Daniel Villena and Alejandro Vila")[0]/2, screen.get_size()[1]/2 - 120))
+        creditText = font.render("by Daniel Villena and Alejandro Vila", False, (200, 200, 200))
+        screen.blit(creditText, (screen.get_size()[0]/2 - font.size("by Daniel Villena and Alejandro Vila")[0]/2, screen.get_size()[1]/2 - 170))
 
 
         playText = font.render("Play", False, self.colors[0])
@@ -205,9 +209,9 @@ class Menu:
         statsText = font.render("Statistics", False, self.colors[2])
         exitText = font.render("Exit", False, self.colors[3])
 
-        titleText = font.render("Ship Killer", False, (200, 155, 45))
+        titleText = self.titleFont.render("Ship Killer", False, (200, 155, 45))
 
-        screen.blit(titleText, (screen.get_size()[0]/2 - font.size("Ship Killer")[0]/2, screen.get_size()[1]/4))
+        screen.blit(titleText, (screen.get_size()[0]/2 - self.titleFont.size("Ship Killer")[0]/2, screen.get_size()[1]/4 - 80))
 
         screen.blit(playText, (screen.get_size()[0]/2 - font.size("Play")[0]/2, screen.get_size()[1]/4 + 100))
         screen.blit(settingsText, (screen.get_size()[0]/2 - font.size("Settings")[0]/2, screen.get_size()[1]/4 + 200))
