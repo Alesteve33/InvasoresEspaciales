@@ -9,6 +9,7 @@ from menu import Menu
 from background import Background
 from fade import Fade
 from stats import Stats
+from boss import Boss
 
 pygame.init()
 pygame.font.init()
@@ -58,6 +59,8 @@ stats = Stats()
 shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
 enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
+
+firstBoss = Boss(100, 100, 0, 10, 200, 0)
 
 running = True
 while running:
@@ -226,6 +229,9 @@ while running:
         explosion_sound.play()
 
     player.render(screen, dt)
+
+    firstBoss.tick(dt)
+    firstBoss.render(screen)
 
     timer += dt
 
