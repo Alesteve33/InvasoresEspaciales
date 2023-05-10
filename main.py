@@ -6,6 +6,8 @@ from bullet import Bullet
 from enemyfactory import EnemyFactory
 from menu import Menu
 from background import Background
+from fade import Fade
+from stats import Stats
 
 pygame.init()
 pygame.font.init()
@@ -34,26 +36,35 @@ bullets = []
 background = Background(WIDTH, HEIGHT)
 
 player = Player(WIDTH/2-80, 585, 250.0, 4)
-score = 0
 
 direction = 0
 
 bulletRand = 96
 
-menu = Menu()
+menu = Menu(screen, WIDTH, HEIGHT)
 
 font = pygame.font.SysFont('Comic Sans MS', 30)
 enemyFactory = EnemyFactory(random.randint(2, 5))
 enemyFactory.spawnLines(4, 5)
 enemyFactory.spawnCheck(enemyRows)
 
+fade = Fade()
+
+stats = Stats()
+
 running = True
 while running:
-    
+
+    if not menu.isInMenu:
+        fade.tick()
+
     keys = pygame.key.get_pressed()
-    
+
     if menu.isInMenu:
-        menu.render(screen, font)
+        if not menu.isGameOver:
+            player.score = 0
+
+        menu.render(screen, font, player.score, dt, stats)
         handleKeys = menu.handleKey(keys, dt, enemyRows, player, bullets, enemyFactory)
         if not handleKeys:
             running = False
@@ -62,26 +73,29 @@ while running:
 
         pygame.display.update()
         dt = clock.tick(FPS) / 1000
+        keys = False
         continue
 
     if isOnStartAnimation:
+        fade.setFadeState(1)
+
         startAnimationTimer += dt
         screen.fill((5, 2, 25))
 
         background.render(screen, dt, WIDTH, HEIGHT)
-        player.render(screen)
+        player.render(screen, dt)
 
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
                 enemy.canShoot = False
                 lastEnemyInRow = enemyRow.enemies[len(enemyRow.enemies) - 1]
                 firstEnemyInRow = enemyRow.enemies[0]
-                
+
                 if lastEnemyInRow.direction == 0:
                     enemy.x += enemy.speed * dt
                 else:
                     enemy.x -= enemy.speed * dt
-            
+
                 if lastEnemyInRow.x > size[0] - lastEnemyInRow.size[0]:
                     enemy.direction = 1
                 elif firstEnemyInRow.x < 0:
@@ -92,45 +106,101 @@ while running:
         for bullet in bullets:
             bullet.tick(dt)
             bullet.render(screen)
+
+
+        scoreText = font.render("Score: " + str(player.score), False, (255, 255, 255))
+        screen.blit(scoreText, (0, 0))
+
         if startAnimationTimer >= startAnimationTimeToGoDown and enemyFactory.rowsLeft > 0:
             startAnimationTimer = 0
             for enemyRow in enemyRows:
                 for enemy in enemyRow.enemies:
                     enemy.y += enemy.size[1] + 20
             enemyFactory.spawnCheck(enemyRows)
-               
+
         elif enemyFactory.rowsLeft <= 0:
             for enemyRow in enemyRows:
                 for enemy in enemyRow.enemies:
                     enemy.canShoot = True
             isOnStartAnimation = False
 
-        pygame.display.update()        
+        fade.render(screen)
+
+        pygame.display.update()
         dt = clock.tick(FPS) / 1000
+
+        keys = False
+
+        continue
+
+    if player.isExploding:
+        fade.setFadeState(2)
+
+        screen.fill((5, 2, 25))
+        background.render(screen, dt, WIDTH, HEIGHT)
+
+        if player.finishedExplosion:
+            menu.isInMenu = True
+            menu.isGameOver = True
+
+            stats.deaths += 1
+            if player.score > stats.highScore:
+                stats.highScore = player.score
+
+        for bullet in bullets:
+            bullet.tick(dt)
+            bullet.render(screen)
+        for enemyRow in enemyRows:
+            for enemy in enemyRow.enemies:
+                lastEnemyInRow = enemyRow.enemies[len(enemyRow.enemies) - 1]
+                firstEnemyInRow = enemyRow.enemies[0]
+
+                if lastEnemyInRow.direction == 0:
+                    enemy.x += enemy.speed * dt
+                else:
+                    enemy.x -= enemy.speed * dt
+
+                if lastEnemyInRow.x > size[0] - lastEnemyInRow.size[0]:
+                    enemy.direction = 1
+                elif firstEnemyInRow.x < 0:
+                    enemy.direction = 0
+
+                enemy.tick(bullets, player.x, player.y, dt, bulletRand)
+                enemy.render(screen)
+        player.render(screen, dt)
+
+        fade.render(screen)
+
+        pygame.display.update()
+        dt = clock.tick(FPS) / 1000
+        keys = False
         continue
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                print(keys[pygame.K_SPACE])
+            if event.key == pygame.K_SPACE and not menu.holdShoot:
                 b = player.shoot()
                 if b is not None:
                     bullets.append(b)
-            
+    if keys[pygame.K_SPACE] and menu.holdShoot:
+        b = player.shoot()
+        if b is not None:
+            bullets.append(b)
+
     screen.fill((5, 2, 25))
 
     background.render(screen, dt, WIDTH, HEIGHT)
-    
-    scoreText = font.render("Score: " + str(score), False, (255, 255, 255))
+
+    scoreText = font.render("Score: " + str(player.score), False, (255, 255, 255))
     screen.blit(scoreText, (0, 0))
-    
+
     player.handleKey(keys, dt)
     if not player.tick(dt, bullets):
-        menu.isInMenu = True
-        menu.isGameOver = True
-    player.render(screen)
+        player.isExploding = True
+
+    player.render(screen, dt)
 
     timer += dt
 
@@ -155,12 +225,12 @@ while running:
         for enemy in enemyRow.enemies:
             lastEnemyInRow = enemyRow.enemies[len(enemyRow.enemies) - 1]
             firstEnemyInRow = enemyRow.enemies[0]
-            
+
             if lastEnemyInRow.direction == 0:
                 enemy.x += enemy.speed * dt
             else:
                 enemy.x -= enemy.speed * dt
-            
+
             if lastEnemyInRow.x > size[0] - lastEnemyInRow.size[0]:
                 #lastEnemyInRow.direction = 1
                 enemy.direction = 1
@@ -169,12 +239,13 @@ while running:
                 #lastEnemyInRow.direction = 0
                 enemy.direction = 0
                 #enemy.y += enemy.size[1] + 20
-            
-            
+
+
             enemy.tick(bullets, player.x, player.y, dt, bulletRand)
             enemy.render(screen)
             if enemy.health <= 0:
                 removeEnemyList.append(enemy)
+                stats.kills += 1
 
     if not enemyRows and enemyFactory.rowsLeft <= 0:
         enemyFactory.spawnLines(4, 5)
@@ -186,15 +257,16 @@ while running:
             for enemy in enemyRow.enemies:
                 if enemy == enemyToRemove:
                     enemyRow.enemies.remove(enemyToRemove)
-                    score += 1
+                    player.score += 1
+                    stats.totalScore += 1
                 if not enemyRow.enemies:
                     enemyRows.remove(enemyRow)
-    
+
     for bullet in bullets:
         bullet.tick(dt)
         bullet.render(screen)
-    
-    pygame.display.update() 
+
+    pygame.display.update()
     dt = clock.tick(FPS) / 1000
-    
+
 pygame.quit()

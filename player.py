@@ -16,13 +16,42 @@ class Player:
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 1
         
+        self.isExploding = False
+        self.finishedExplosion = False
+        
+        self.animationTimer = 0
+        self.animationFrameTime = 0.15
+        self.waitTimeAfterFinishedExplosion = 2
+        self.currentAnimationFrame = 1
+        self.explosion_image = pygame.image.load("sprites/Circle_explosion1.png")
+        self.explosion_rect = self.explosion_image.get_rect()
+        
         self.player_image = pygame.transform.scale(pygame.image.load("sprites/player_1.png"), self.size)
         self.player_rect = self.player_image.get_rect()
         self.player_rect.x = self.x
         self.player_rect.y = self.y
-    def render(self, screen):
-        screen.blit(self.player_image, self.player_rect)
-        self.shield.render(screen)
+        self.score = 0
+    def render(self, screen, dt):
+        if self.currentAnimationFrame < 7:
+            screen.blit(self.player_image, self.player_rect)
+            self.shield.render(screen)
+
+        if self.isExploding:
+            self.animationTimer += dt
+            if self.animationTimer > self.animationFrameTime and self.currentAnimationFrame < 10:
+                self.animationTimer = 0
+                self.animateExplosion()
+            self.explosion_rect.centerx = self.player_rect.centerx
+            self.explosion_rect.centery = self.player_rect.centery
+            
+            if self.currentAnimationFrame < 10 or self.animationTimer < self.animationFrameTime:
+                screen.blit(self.explosion_image, self.explosion_rect)
+        if self.currentAnimationFrame >= 10:
+            self.animationTimer += dt
+            if self.animationTimer > self.waitTimeAfterFinishedExplosion:
+                self.finishedExplosion = True
+            
+            
     
     def tick(self, deltaTime, bullets):
         self.shield.tick(deltaTime, self.x, self.y, self.size[0])
@@ -55,6 +84,12 @@ class Player:
         else:
             return False
         return True
+    
+    def animateExplosion(self):
+        self.currentAnimationFrame += 1
+        self.explosion_image = pygame.transform.scale(pygame.image.load("sprites/Circle_explosion" + str(self.currentAnimationFrame) + ".png"), (500,500))
+        self.explosion_rect = self.explosion_image.get_rect()
+    
     def handleKey(self, keys, deltaTime):
         if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.x > 0:
             self.x -= self.speed * deltaTime
@@ -64,7 +99,6 @@ class Player:
             self.shield.enableShield()
             
     def shoot(self):
-        print("NIGG")
         if self.time_since_last_shot > self.shoot_cooldown:
             self.time_since_last_shot = 0
             return Bullet(self.player_rect.centerx - 8, self.player_rect.centery - 20, 1000, False)
