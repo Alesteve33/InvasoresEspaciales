@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 from player import Player
 from enemy import Enemy
 from bullet import Bullet
@@ -11,6 +12,7 @@ from stats import Stats
 
 pygame.init()
 pygame.font.init()
+pygame.mixer.init()
 
 size = WIDTH, HEIGHT = 768, 672
 screen = pygame.display.set_mode(size)
@@ -41,19 +43,27 @@ direction = 0
 
 bulletRand = 96
 
-menu = Menu(screen, WIDTH, HEIGHT)
-
 font = pygame.font.SysFont('Comic Sans MS', 30)
 enemyFactory = EnemyFactory(random.randint(2, 5))
 enemyFactory.spawnLines(4, 5)
 enemyFactory.spawnCheck(enemyRows)
 
+menu = Menu(screen, WIDTH, HEIGHT, font)
+
 fade = Fade()
 
 stats = Stats()
 
+
+shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
+explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
+
 running = True
 while running:
+
+    shoot_sound.set_volume(menu.volume * 0.01)
+    explosion_sound.set_volume(menu.volume * 0.01)
+    menu.menu_select_sound.set_volume(menu.volume * 0.01)
 
     if not menu.isInMenu:
         fade.tick()
@@ -184,10 +194,13 @@ while running:
                 b = player.shoot()
                 if b is not None:
                     bullets.append(b)
+                    shoot_sound.play()
+
     if keys[pygame.K_SPACE] and menu.holdShoot:
         b = player.shoot()
         if b is not None:
             bullets.append(b)
+            shoot_sound.play()
 
     screen.fill((5, 2, 25))
 
@@ -199,6 +212,7 @@ while running:
     player.handleKey(keys, dt)
     if not player.tick(dt, bullets):
         player.isExploding = True
+        explosion_sound.play()
 
     player.render(screen, dt)
 

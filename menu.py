@@ -3,7 +3,7 @@ from player import Player
 
 class Menu:
 
-    def __init__(self, screen, sw, sh):
+    def __init__(self, screen, sw, sh, font):
         self.isInMenu = True
         self.buttonSelected = 0
         self.buttonAmount = 4
@@ -15,6 +15,7 @@ class Menu:
 
         self.holdShoot = True
         self.volume = 50
+        self.musicOn = True
 
         self.volumeCooldown = 0.1
         self.volumeTimer = 0
@@ -22,6 +23,8 @@ class Menu:
         self.screen = screen
         self.sw = sw
         self.sh = sh
+
+        self.menu_select_sound = pygame.mixer.Sound("sounds/menuSelect.mp3")
 
         for i in range(self.buttonAmount):
             self.colors.append((255,255,255))
@@ -31,9 +34,14 @@ class Menu:
 
         self.arrow_image = pygame.transform.scale(pygame.image.load("sprites/arrow.png"), (32, 32))
         self.arrow_rect = self.arrow_image.get_rect()
+        self.arrow_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 - 50
+        self.arrow_rect.y = self.sh/4 + 155
+
 
         self.arrow_2_image = pygame.transform.rotate(self.arrow_image, 180)
         self.arrow_2_rect = self.arrow_2_image.get_rect()
+        self.arrow_2_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 195
+        self.arrow_2_rect.y = self.sh/4 + 155
 
     def handleKey(self, keys, deltaTime, enemyRows, player, bullets, spawner):
         for event in pygame.event.get():
@@ -42,9 +50,12 @@ class Menu:
             if event.type == pygame.KEYDOWN:
                 if (event.key == pygame.K_UP and not self.isGameOver):
                     self.buttonSelected -= 1
+                    self.menu_select_sound.play()
                 elif (event.key == pygame.K_DOWN and not self.isGameOver):
                     self.buttonSelected += 1
+                    self.menu_select_sound.play()
                 elif (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE) and not self.isGameOver:
+                    self.menu_select_sound.play()
                     if not self.isInSettings:
                         if self.buttonSelected == 0: #PLAY
                             self.isInMenu = False
@@ -61,7 +72,10 @@ class Menu:
                     if self.isInSettings and self.buttonSelected == 0:
                         self.holdShoot = not self.holdShoot
                     elif self.isInSettings and self.buttonSelected == 2:
+                        self.musicOn = not self.musicOn
+                    elif self.isInSettings and self.buttonSelected == 3:
                         self.isInSettings = False
+                        self.buttonSelected = 1
 
                 elif event.key == pygame.K_ESCAPE:
                     if self.isInSettings:
@@ -90,14 +104,17 @@ class Menu:
     def render(self, screen, font, score, dt, stats):
         keys = pygame.key.get_pressed()
         self.volumeTimer += dt
-        if keys[pygame.K_LEFT] and self.volumeTimer > self.volumeCooldown:
-            self.volumeTimer = 0
-            if self.isInSettings and self.volume > 0:
-                self.volume -= 1
-        elif keys[pygame.K_RIGHT] and self.volumeTimer > self.volumeCooldown:
-            self.volumeTimer = 0
-            if self.isInSettings and self.volume < 100:
-                self.volume += 1
+        if self.volumeTimer > self.volumeCooldown and self.buttonSelected == 1:
+            if keys[pygame.K_LEFT]:
+                self.volumeTimer = 0
+                if self.isInSettings and self.volume > 0:
+                    self.menu_select_sound.play()
+                    self.volume -= 1
+            elif keys[pygame.K_RIGHT]:
+                self.volumeTimer = 0
+                if self.isInSettings and self.volume < 100:
+                    self.menu_select_sound.play()
+                    self.volume += 1
 
         if self.buttonSelected >= self.buttonAmount:
             self.buttonSelected = 0
@@ -107,28 +124,28 @@ class Menu:
 
         screen.fill((0,0,0))
         if self.isInSettings:
-            settingsText = font.render("Settings", False, (255, 255, 255))
+            settingsText = font.render("Settings", False, (255, 155, 155))
             screen.blit(settingsText, (screen.get_size()[0]/2 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 200))
 
-            toggleText = "ON"
+            toggleAttackText = "ON"
             if not self.holdShoot:
-                toggleText = "OFF"
+                toggleAttackText = "OFF"
 
-            holdAttackText = font.render("Hold attack: " + toggleText , False, self.colors[0])
+            toggleMusicText = "ON"
+            if not self.musicOn:
+                toggleMusicText = "OFF"
+
+            holdAttackText = font.render("Hold attack: " + toggleAttackText , False, self.colors[0])
             volumeText = font.render("Volume: " + str(self.volume) + "%", False, self.colors[1])
-            exitText = font.render("Go back", False, self.colors[2])
+            musicText = font.render("Music: " + toggleMusicText, False, self.colors[2])
+            exitText = font.render("Go back", False, self.colors[3])
 
             titleText = font.render("Ship Killer", False, (200, 155, 45))
 
-            screen.blit(holdAttackText, (screen.get_size()[0]/2 - font.size("Hold attack: " + toggleText)[0]/2, screen.get_size()[1]/4 + 100))
-            screen.blit(volumeText, (screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2, screen.get_size()[1]/4 + 200))
-            screen.blit(exitText, (screen.get_size()[0]/2 - font.size("Go back")[0]/2, screen.get_size()[1]/4 + 300))
-
-            self.arrow_rect.x = screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 - 50
-            self.arrow_rect.y = screen.get_size()[1]/4 + 205
-
-            self.arrow_2_rect.x = screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 192
-            self.arrow_2_rect.y = screen.get_size()[1]/4 + 205
+            screen.blit(holdAttackText, (screen.get_size()[0]/2 - font.size("Hold attack: " + toggleAttackText)[0]/2, screen.get_size()[1]/4 + 50))
+            screen.blit(volumeText, (screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2, screen.get_size()[1]/4 + 150))
+            screen.blit(musicText, (screen.get_size()[0]/2 - font.size("Music: " + toggleMusicText)[0]/2, screen.get_size()[1]/4 + 250))
+            screen.blit(exitText, (screen.get_size()[0]/2 - font.size("Go back")[0]/2, screen.get_size()[1]/4 + 350))
 
             screen.blit(self.arrow_image, self.arrow_rect)
             screen.blit(self.arrow_2_image, self.arrow_2_rect)
