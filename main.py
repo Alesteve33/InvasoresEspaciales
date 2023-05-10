@@ -203,6 +203,9 @@ while running:
                 if b is not None:
                     bullets.append(b)
                     shoot_sound.play()
+            if event.key == pygame.K_ESCAPE and not menu.isInMenu and not isOnStartAnimation:
+                player.isExploding = True
+                explosion_sound.play()
 
     if keys[pygame.K_SPACE] and menu.holdShoot:
         b = player.shoot()

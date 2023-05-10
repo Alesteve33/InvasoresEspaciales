@@ -5,7 +5,7 @@ class Fade:
         self.fade = pygame.image.load_extended('sprites/fade.png').convert_alpha()
         self.alpha = 255
         self.fadeState = 0
-        self.fadeSpeed = 2
+        self.fadeSpeed = 3
 
     def render(self, screen):
         self.fade.set_alpha(self.alpha)
