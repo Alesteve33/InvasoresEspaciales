@@ -60,7 +60,7 @@ shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
 enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
 
-firstBoss = Boss(100, 100, 0, 10, 200, 0)
+firstBoss = Boss(100, 100, 0, 10, 20, 0)
 
 running = True
 while running:
@@ -95,7 +95,7 @@ while running:
         keys = False
         continue
 
-    if isOnStartAnimation:
+    if isOnStartAnimation and enemyFactory.keepSpawning:
         fade.setFadeState(1)
 
         startAnimationTimer += dt
@@ -230,9 +230,6 @@ while running:
 
     player.render(screen, dt)
 
-    firstBoss.tick(dt)
-    firstBoss.render(screen)
-
     timer += dt
 
     if timer >= timeToGoDown and not enemiesAreSpawning:
@@ -298,6 +295,9 @@ while running:
     for bullet in bullets:
         bullet.tick(dt)
         bullet.render(screen)
+
+    firstBoss.tick(dt, player, bullets)
+    firstBoss.render(screen)
 
     pygame.display.update()
     dt = clock.tick(FPS) / 1000
