@@ -52,10 +52,10 @@ class Menu:
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN:
-                if (event.key == pygame.K_UP and not self.isGameOver):
+                if (event.key == pygame.K_UP and not self.isGameOver and not self.isInStats):
                     self.buttonSelected -= 1
                     self.menu_select_sound.play()
-                elif (event.key == pygame.K_DOWN and not self.isGameOver):
+                elif (event.key == pygame.K_DOWN and not self.isGameOver and not self.isInStats):
                     self.buttonSelected += 1
                     self.menu_select_sound.play()
                 elif (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE) and not self.isGameOver:
