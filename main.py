@@ -46,7 +46,7 @@ bulletRand = 96
 
 font = pygame.font.SysFont('Comic Sans MS', 30)
 enemyFactory = EnemyFactory(random.randint(2, 5))
-enemyFactory.spawnLines(4, 5)
+enemyFactory.spawnLines(4, 4)
 enemyFactory.spawnCheck(enemyRows)
 
 menu = Menu(screen, WIDTH, HEIGHT, font)
@@ -59,8 +59,6 @@ stats = Stats()
 shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
 enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
-
-firstBoss = Boss(100, 100, 0, 10, 20, 0)
 
 running = True
 while running:
@@ -164,6 +162,10 @@ while running:
 
             menu.game_over_sound.play()
 
+            enemyFactory = EnemyFactory(random.randint(2, 5))
+            enemyFactory.spawnLines(4, 4)
+            enemyFactory.spawnCheck(enemyRows)
+
             stats.deaths += 1
             if player.score > stats.highScore:
                 stats.highScore = player.score
@@ -189,6 +191,10 @@ while running:
                 enemy.tick(bullets, player.x, player.y, dt, bulletRand)
                 enemy.render(screen)
         player.render(screen, dt)
+
+        if not enemyFactory.boss == None:
+            enemyFactory.boss.tick(dt, player, bullets)
+            enemyFactory.boss.render(screen)
 
         fade.render(screen)
 
@@ -236,13 +242,15 @@ while running:
         timer = 0
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
-                enemy.y += enemy.size[1] + 20
+                if not enemy.y > player.y:
+                    enemy.y += enemy.size[1] + 20
         enemyFactory.spawnCheck(enemyRows)
     elif enemiesAreSpawning and timer >= timeToSpawn:
         timer = 0
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
-                enemy.y += enemy.size[1] + 20
+                if not enemy.y > player.y:
+                    enemy.y += enemy.size[1] + 20
         enemyFactory.spawnCheck(enemyRows)
         if enemyFactory.rowsLeft <= 0:
             enemiesAreSpawning = False
@@ -268,6 +276,9 @@ while running:
                 enemy.direction = 0
                 #enemy.y += enemy.size[1] + 20
 
+            if enemy.enemy_rect.colliderect(player.player_rect):
+                player.health = 0
+                enemy.health = 0
 
             enemy.tick(bullets, player.x, player.y, dt, bulletRand)
             enemy.render(screen)
@@ -277,10 +288,10 @@ while running:
 
                 enemy_killed_sound.play()
 
-    if not enemyRows and enemyFactory.rowsLeft <= 0:
-        enemyFactory.spawnLines(4, 5)
-        timer = 0
-        enemiesAreSpawning = True
+    #if not enemyRows and enemyFactory.rowsLeft <= 0:
+    #    enemyFactory.spawnLines(4, 4)
+    #    timer = 0
+    #    enemiesAreSpawning = True
 
     for enemyToRemove in removeEnemyList:
         for enemyRow in enemyRows:
@@ -296,9 +307,14 @@ while running:
         bullet.tick(dt)
         bullet.render(screen)
 
-    firstBoss.tick(dt, player, bullets)
-    firstBoss.render(screen)
+    if not enemyFactory.boss == None:
+        enemyFactory.boss.tick(dt, player, bullets)
+        enemyFactory.boss.render(screen)
 
+        if enemyFactory.boss.finishedExplosion:
+            enemyFactory.boss = None
+            enemyFactory.rowsSpawned = 0
+            
     pygame.display.update()
     dt = clock.tick(FPS) / 1000
 

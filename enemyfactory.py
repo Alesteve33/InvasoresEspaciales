@@ -2,6 +2,7 @@ import pygame
 import random
 from enemy import Enemy
 from enemyrow import EnemyRow
+from boss import Boss
 
 class EnemyFactory:
 
@@ -10,13 +11,29 @@ class EnemyFactory:
         self.actualLevelRows = actualLevelRows
         self.rowsLeft= 0
 
-        #Herramienta de debug, no usar esto para juego normal. Debe estar en True si no estás debugeando el boss
-        self.keepSpawning = False
+        self.rowsSpawned = 0
+        self.rowsForBoss = 4
 
+        self.boss = None
+
+        #Herramienta de debug, no usar esto para juego normal. Debe estar en True si no estás debugeando el boss
+        self.keepSpawning = True
+
+
+    def spawnBoss(self):
+        self.boss = Boss(100, -220, 0, 10, 20, 0)
 
     def spawnCheck(self, enemyRows):
+        if self.rowsSpawned == self.rowsForBoss and self.boss == None and len(enemyRows) == 0:
+            self.rowsLeft = 0
+            self.spawnBoss()
+
+        if not self.boss == None:
+            self.rowsLeft = 0
+
         if self.rowsLeft > 0 and self.keepSpawning:
             self.spawn(enemyRows)
+            self.rowsSpawned += 1
 
     def spawnLines(self, minRows, maxRows):
         self.rowsLeft = random.randint(minRows, maxRows)

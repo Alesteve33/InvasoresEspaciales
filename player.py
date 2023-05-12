@@ -18,7 +18,7 @@ class Player:
 
         self.isExploding = False
         self.finishedExplosion = False
-
+        
         self.animationTimer = 0
         self.animationFrameTime = 0.15
         self.waitTimeAfterFinishedExplosion = 2
