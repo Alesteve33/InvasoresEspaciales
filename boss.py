@@ -11,10 +11,14 @@ class Boss:
         self.boss_type = boss_type
         self.speed = speed
 
-        self.size = width, height = 544, 256
+        self.size = width, height = 404, 177
 
         self.maxHealth = health
         self.health = self.maxHealth
+
+        self.MaxWingHealth = health / 3
+        self.LeftWingHealth = self.MaxWingHealth
+        self.RightWingHealth = self.MaxWingHealth
 
         self.isVisible = True
 
@@ -45,7 +49,7 @@ class Boss:
         self.explosionsToDo = 100
         self.waitAfterFinalExplosion = 3
 
-        self.laserEnabled = False
+        self.laserEnabled = True
 
         self.laserTimer = 0
         self.maxLaserTime = 3
@@ -98,18 +102,36 @@ class Boss:
 
         pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x + 5, y + 5, width2 - 10, height - 10))
+    
+        x = screen.get_size()[0] / 8
+        y = 70
+
+        width = 80 
+        height = 15
+
+        width2 = width - ((1 - (self.LeftWingHealth / self.MaxWingHealth)))
+        pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2 - 4, height-4))
+
+        width2 = width - ((1 - (self.LeftWingHealth / self.MaxWingHealth)))
+
+        x = screen.get_size()[0] - screen.get_size()[0] / 8 - width
+        y = 70
+
+        pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width-4, height-4),  4)
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
 
     def tick(self, dt, player, bullets):
         self.boss_rect.x = self.x
         self.boss_rect.y = self.y
-        self.right_wing_rect.bottomright = (self.boss_rect.bottomright[0] -5, self.boss_rect.bottomright[1] -7) 
-        self.left_wing_rect.bottomleft = (self.boss_rect.bottomleft[0] +5, self.boss_rect.bottomleft[1] -7) 
+        self.right_wing_rect.bottomright = (self.boss_rect.bottomright[0] +65, self.boss_rect.bottomright[1] + 43) 
+        self.left_wing_rect.bottomleft = (self.boss_rect.bottomleft[0] -66, self.boss_rect.bottomleft[1] + 43) 
 
-        self.laser_rect.x = self.x + 149
-        self.laser_rect.y = self.y + 160
+        self.laser_rect.x = self.x + 79
+        self.laser_rect.y = self.y + 120
 
-        self.laser_rect_2.x = self.x + 349
-        self.laser_rect_2.y = self.y + 160
+        self.laser_rect_2.x = self.x + 279
+        self.laser_rect_2.y = self.y + 120
 
         if self.health <= 0:
             self.isExploding = True
@@ -160,7 +182,7 @@ class Boss:
 
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
-                if bullet.bullet_rect.colliderect(self.boss_rect):
+                if bullet.bullet_rect.colliderect(self.boss_rect) or bullet.bullet_rect.colliderect(self.left_wing_rect) or bullet.bullet_rect.colliderect(self.right_wing_rect):
                     self.health -= bullet.damage
                     bullets.remove(bullet)
 
@@ -192,13 +214,13 @@ class Boss:
             y = self.boss_rect.centery
 
             if number == 0:
-                x += 96
+                x += 26
             elif number == 1:
-                x += 216
+                x += 152
             elif number == 2:
-                x += 296
+                x += 221
             else:
-                x += 416
+                x += 345
 
             return [Bullet(x, y, 400, True), Bullet(x + 9, y, 400, True), Bullet(x + 18, y, 400, True)]
 
