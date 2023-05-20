@@ -10,6 +10,7 @@ class Boss:
         self.y = y
         self.boss_type = boss_type
         self.speed = speed
+
         self.size = width, height = 544, 256
 
         self.maxHealth = health
@@ -21,7 +22,11 @@ class Boss:
         self.animation_timer = 0
         self.animation_step = .1
 
-        self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
+        self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
+        self.left_wing_image = pygame.image.load("sprites/boss/left.png")
+        self.left_wing_image = pygame.transform.scale(self.left_wing_image, tuple(x/5 for x in self.left_wing_image.get_size()))
+        self.right_wing_image = pygame.image.load("sprites/boss/right.png")
+        self.right_wing_image = pygame.transform.scale(self.right_wing_image, tuple(x/5 for x in self.right_wing_image.get_size()))
 
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0
@@ -49,6 +54,7 @@ class Boss:
 
         self.randomShootChance = 10 #0.1
         self.randomLaserChance = 1 #0.001
+        
 
         self.laser_image = pygame.transform.scale(pygame.image.load("sprites/laser.png"), (46, 415))
         self.laser_rect = self.laser_image.get_rect()
@@ -57,7 +63,14 @@ class Boss:
         self.direction = direction
         self.canShoot = True
         self.boss_rect = self.boss_image.get_rect()
+        self.right_wing_rect = self.right_wing_image.get_rect()
+        self.left_wing_rect = self.left_wing_image.get_rect()
 
+        
+        
+        
+        pygame.Rect(self.boss_rect)
+        
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0
 
@@ -89,6 +102,8 @@ class Boss:
     def tick(self, dt, player, bullets):
         self.boss_rect.x = self.x
         self.boss_rect.y = self.y
+        self.right_wing_rect.bottomright = (self.boss_rect.bottomright[0] -5, self.boss_rect.bottomright[1] -7) 
+        self.left_wing_rect.bottomleft = (self.boss_rect.bottomleft[0] +5, self.boss_rect.bottomleft[1] -7) 
 
         self.laser_rect.x = self.x + 149
         self.laser_rect.y = self.y + 160
@@ -194,7 +209,7 @@ class Boss:
                 self.sprite_number = 1
             else:
                 self.sprite_number += 1
-            self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
+            self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
 
     def render(self, screen):
         if not self.isOnSpawnAnimation and not self.isExploding:
@@ -205,5 +220,8 @@ class Boss:
                 screen.blit(self.laser_image, self.laser_rect)
                 screen.blit(self.laser_image, self.laser_rect_2)
             screen.blit(self.boss_image, self.boss_rect)
+            screen.blit(self.right_wing_image, self.right_wing_rect)
+            screen.blit(self.left_wing_image, self.left_wing_rect)
+            
 
         self.explosionMaker.render(screen)

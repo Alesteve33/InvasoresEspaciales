@@ -12,7 +12,7 @@ class EnemyFactory:
         self.rowsLeft= 0
 
         self.rowsSpawned = 0
-        self.rowsForBoss = 4
+        self.rowsForBoss = 0
 
         self.boss = None
 
@@ -21,7 +21,7 @@ class EnemyFactory:
 
 
     def spawnBoss(self):
-        self.boss = Boss(100, -220, 0, 10, 20, 0)
+        self.boss = Boss(100, -220, 3, 10, 20, 0)
 
     def spawnCheck(self, enemyRows):
         if self.rowsSpawned == self.rowsForBoss and self.boss == None and len(enemyRows) == 0:

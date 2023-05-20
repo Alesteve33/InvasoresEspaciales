@@ -22,7 +22,6 @@ pygame.display.set_caption("Ship Killer")
 FPS = 60
 clock = pygame.time.Clock()
 dt = 0
-
 timeToGoDown = 6
 timeToSpawn = 1.5
 timer = 0
@@ -46,8 +45,8 @@ bulletRand = 96
 
 font = pygame.font.SysFont('Comic Sans MS', 30)
 enemyFactory = EnemyFactory(random.randint(2, 5))
-enemyFactory.spawnLines(4, 4)
-enemyFactory.spawnCheck(enemyRows)
+#enemyFactory.spawnLines(4, 4)
+#enemyFactory.spawnCheck(enemyRows)
 
 menu = Menu(screen, WIDTH, HEIGHT, font)
 
