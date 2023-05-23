@@ -253,8 +253,8 @@ while running:
         enemyFactory.spawnCheck(enemyRows)
         if enemyFactory.rowsLeft <= 0:
             enemiesAreSpawning = False
-
-
+    
+    enemyFactory.spawnCheck(enemyRows)
     removeEnemyList = []
     for enemyRow in enemyRows:
         for enemy in enemyRow.enemies:
@@ -308,6 +308,7 @@ while running:
 
     if not enemyFactory.boss == None:
         enemyFactory.boss.tick(dt, player, bullets)
+        enemyFactory.boss.doAi(bullets, player, dt)
         enemyFactory.boss.render(screen)
 
         if enemyFactory.boss.finishedExplosion:

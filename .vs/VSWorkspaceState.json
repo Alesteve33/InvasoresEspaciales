@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\sounds"
+    "\\sounds",
+    "\\sprites"
   ],
   "SelectedNode": "\\boss.py",
   "PreviewInSolutionExplorer": false
