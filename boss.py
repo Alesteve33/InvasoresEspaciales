@@ -33,7 +33,7 @@ class Boss:
 
         self.isOnSpawnAnimation = True
         self.spawnAnimationSpeed = 130
-        self.distanceToPlayerToEndSpawnAnimation = 500
+        self.distanceToPlayerToEndSpawnAnimation = 449
 
         self.explosionMaker = Explosions()
         self.isExploding = False
@@ -53,7 +53,7 @@ class Boss:
         self.maxLaserTime = 3
         self.leftTimeSinceDisabled = 0
         self.rightTimeSinceDisabled = 0
-        self.laserCooldown = 3
+        self.laserCooldown = 1
 
         self.randomShootChance = 10 #0.1
         self.randomLaserChance = 1 #0.001
@@ -68,10 +68,10 @@ class Boss:
         self.boss_rect = self.boss_image.get_rect()
 
         #Warning Rectangles
-        self.is_warning = False
-        self.warning_max_time = 3
-        self.warning_timer = 0
+        self.warning_max_time = 2
         self.warnings = []
+        self.right_warning_enabled = False
+        self.left_warning_enabled = False
 
         pygame.Rect(self.boss_rect)
 
@@ -79,9 +79,11 @@ class Boss:
         self.time_since_last_shot = 0
 
     def doAi(self, bullets, player, dt):
-        if player.x - player.size[0] - 10 > self.left_laser_rect.x and player.x + player.size[0] + 10 < self.right_laser_rect.x and self.rightTimeSinceDisabled > self.laserCooldown:
+        if player.x - player.size[0] - 10 > self.left_laser_rect.x and player.x + player.size[0] + 10 < self.right_laser_rect.x and self.rightTimeSinceDisabled > self.laserCooldown and not self.left_warning_enabled and not self.right_warning_enabled and not self.rightLaserEnabled and not self.leftLaserEnabled:
             self.enableLaser(True, dt)
-
+            self.enableLaser(False, dt)
+            print("AA")
+        
         #if random.randint(0, 1000) > 1000 - self.randomLaserChance and self.timeSinceDisable > self.laserCooldown:
         #    self.enableLaser(True, dt)
 
@@ -121,17 +123,19 @@ class Boss:
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
 
     def enableLaser(self, isRightLaser, dt):
-        self.is_warning = True
-        #Warning Rectangle
-
         if isRightLaser:
-            warning = Warning(1)
+            warning = Warning(2)
+            self.right_warning_enabled = True
+            warning.followPos(self.right_laser_rect)
         else:
             warning = Warning(1)
+            self.left_warning_enabled = True
+            warning.followPos(self.left_laser_rect)
 
         warning.warning_image = pygame.transform.scale(warning.warning_image, self.laser_image.get_size())
         warning.warning_rect = warning.warning_image.get_rect()
         self.warnings.append(warning)
+
 
     def tick(self, dt, player, bullets):
         self.boss_rect.x = self.x
@@ -156,18 +160,7 @@ class Boss:
         if self.health <= 0:
             self.isExploding = True
 
-        #Warnings
-        if self.is_warning:
-            self.warning_timer += dt
-            for warning in self.warnings:
-                if warning.type == 1:
-                    warning.followPos(self.left_laser_rect)
-                elif warning.type == 2:
-                    warning.followPos(self.right_laser_rect)
-        if self.warning_timer > self.warning_max_time:
-            self.is_warning = False
-
-            self.laserEnabled = True
+       
 
         if self.isExploding:
             self.explosionTimer += dt
@@ -229,11 +222,30 @@ class Boss:
                     bullets.remove(bullet)
                 if bullet.bullet_rect.colliderect(self.leftWing.wing_rect):
                     self.leftWing.health -= bullet.damage
+                    if not self.left_warning_enabled and not self.leftLaserEnabled:    
+                        self.enableLaser(False, dt)
                     bullets.remove(bullet)
                 if bullet.bullet_rect.colliderect(self.rightWing.wing_rect):
                     self.rightWing.health -= bullet.damage
                     bullets.remove(bullet)
-
+                    if not self.right_warning_enabled and not self.rightLaserEnabled:
+                        self.enableLaser(True, dt)
+        #Warnings
+        for warning in self.warnings:
+            warning.timer += dt
+            if warning.type == 1:
+                warning.followPos(self.left_laser_rect)
+            elif warning.type == 2:
+                warning.followPos(self.right_laser_rect)
+        for warning in self.warnings:
+            if warning.timer > self.warning_max_time:
+                self.warnings.remove(warning)
+                if warning.type == 1:
+                    self.left_warning_enabled = False
+                    self.leftLaserEnabled = True
+                if warning.type == 2:
+                    self.right_warning_enabled = False
+                    self.rightLaserEnabled = True
         #if self.boss_type == 0:
         #    b = self.shootBoss1(3)
         #    if b is not None:
@@ -300,7 +312,7 @@ class Boss:
 
             for warning in self.warnings:
                 warning.warning_image.set_alpha(128)
-                screen.blit(warning.warning_image, warning.warning_rect)
+                warning.render(screen)
 
 
         self.explosionMaker.render(screen)
@@ -332,9 +344,13 @@ class Wing:
 
 class Warning:
     def __init__(self, type):
-        self.type = 1  # 1 left, 2 right, 3 custom
+        self.timer = 0
+        self.type = type  # 1 left, 2 right, 3 custom
         self.warning_image = pygame.image.load("sprites/fade.png")
         self.warning_rect = self.warning_image.get_rect()
 
     def followPos(self, rect):
         self.warning_rect.topleft = rect.topleft
+
+    def render(self, screen):
+        screen.blit(self.warning_image, self.warning_rect)

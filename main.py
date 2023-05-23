@@ -307,8 +307,8 @@ while running:
         bullet.render(screen)
 
     if not enemyFactory.boss == None:
-        enemyFactory.boss.tick(dt, player, bullets)
         enemyFactory.boss.doAi(bullets, player, dt)
+        enemyFactory.boss.tick(dt, player, bullets)
         enemyFactory.boss.render(screen)
 
         if enemyFactory.boss.finishedExplosion:
