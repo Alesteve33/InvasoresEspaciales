@@ -14,11 +14,8 @@ class Boss:
         self.size = width, height = 404, 177
 
         self.maxHealth = health
-        self.MaxWingHealth = health / 3
 
         self.health = self.maxHealth
-        self.leftWingHealth = self.MaxWingHealth
-        self.rightWingHealth = self.MaxWingHealth
 
         self.isVisible = True
 
@@ -27,10 +24,9 @@ class Boss:
         self.animation_step = .1
 
         self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
-        self.left_wing_image = pygame.image.load("sprites/boss/left.png")
-        self.left_wing_image = pygame.transform.scale(self.left_wing_image, tuple(x/5 for x in self.left_wing_image.get_size()))
-        self.right_wing_image = pygame.image.load("sprites/boss/right.png")
-        self.right_wing_image = pygame.transform.scale(self.right_wing_image, tuple(x/5 for x in self.right_wing_image.get_size()))
+
+        self.rightWing = Wing(self.health / 3, "right", self.x, self.y)
+        self.leftWing = Wing(self.health / 3, "left", self.x, self.y)
 
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0
@@ -61,7 +57,7 @@ class Boss:
 
         self.randomShootChance = 10 #0.1
         self.randomLaserChance = 1 #0.001
-        
+
 
         self.laser_image = pygame.transform.scale(pygame.image.load("sprites/laser.png"), (46, 415))
         self.left_laser_rect = self.laser_image.get_rect()
@@ -70,8 +66,6 @@ class Boss:
         self.direction = direction
         self.canShoot = True
         self.boss_rect = self.boss_image.get_rect()
-        self.right_wing_rect = self.right_wing_image.get_rect()
-        self.left_wing_rect = self.left_wing_image.get_rect()
 
         #Warning Rectangles
         self.is_warning = False
@@ -80,7 +74,7 @@ class Boss:
         self.warnings = []
 
         pygame.Rect(self.boss_rect)
-        
+
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0
 
@@ -115,29 +109,26 @@ class Boss:
         width = screen.get_size()[0] / 5
         height = 15
 
-        width2 = width - ((1 - (self.leftWingHealth / self.MaxWingHealth)))
+        width2 = width - ((1 - (self.leftWing.health / self.leftWing.maxHealth)) * width)
         pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2 - 4, height-4))
-        print(str(self.MaxWingHealth) + " FIRST")
 
         x = screen.get_size()[0] - screen.get_size()[0] / 8 - width
         y = 70
 
-        width2 = width - ((1 - (self.rightWingHealth / self.MaxWingHealth)))
+        width2 = width - ((1 - (self.rightWing.health / self.rightWing.maxHealth)) * width)
         pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width-4, height-4),  4)
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
-        print(str(self.rightWingHealth) + " SECOND")
 
     def enableLaser(self, isRightLaser, dt):
         self.is_warning = True
-        print("a")
         #Warning Rectangle
-        
+
         if isRightLaser:
             warning = Warning(1)
         else:
             warning = Warning(1)
-        
+
         warning.warning_image = pygame.transform.scale(warning.warning_image, self.laser_image.get_size())
         warning.warning_rect = warning.warning_image.get_rect()
         self.warnings.append(warning)
@@ -145,14 +136,22 @@ class Boss:
     def tick(self, dt, player, bullets):
         self.boss_rect.x = self.x
         self.boss_rect.y = self.y
-        self.right_wing_rect.bottomright = (self.boss_rect.bottomright[0] +65, self.boss_rect.bottomright[1] + 43) 
-        self.left_wing_rect.bottomleft = (self.boss_rect.bottomleft[0] -66, self.boss_rect.bottomleft[1] + 43) 
 
         self.left_laser_rect.x = self.x + 79
         self.left_laser_rect.y = self.y + 120
 
         self.right_laser_rect.x = self.x + 279
         self.right_laser_rect.y = self.y + 120
+
+        self.rightWing.x = self.x + 374
+        self.leftWing.x = self.x - 63
+
+        self.rightWing.y = self.y + 100
+        self.leftWing.y = self.y + 100
+
+
+        self.rightWing.tick(dt)
+        self.leftWing.tick(dt)
 
         if self.health <= 0:
             self.isExploding = True
@@ -221,18 +220,18 @@ class Boss:
             self.rightLaserTimer = round(random.uniform(0, self.maxLaserTime), 2)
             self.rightTimeSinceDisabled = 0
 
-        
+
 
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
                 if bullet.bullet_rect.colliderect(self.boss_rect):
                     self.health -= bullet.damage
                     bullets.remove(bullet)
-                if bullet.bullet_rect.colliderect(self.left_wing_rect):
-                    self.leftWingHealth -= bullet.damage
+                if bullet.bullet_rect.colliderect(self.leftWing.wing_rect):
+                    self.leftWing.health -= bullet.damage
                     bullets.remove(bullet)
-                if bullet.bullet_rect.colliderect(self.right_wing_rect):
-                    self.rightWingHealth -= bullet.damage
+                if bullet.bullet_rect.colliderect(self.rightWing.wing_rect):
+                    self.rightWing.health -= bullet.damage
                     bullets.remove(bullet)
 
         #if self.boss_type == 0:
@@ -295,16 +294,40 @@ class Boss:
             if self.rightLaserEnabled:
                 screen.blit(self.laser_image, self.right_laser_rect)
             screen.blit(self.boss_image, self.boss_rect)
-            screen.blit(self.right_wing_image, self.right_wing_rect)
-            screen.blit(self.left_wing_image, self.left_wing_rect)
-            
+
+            self.rightWing.render(screen)
+            self.leftWing.render(screen)
+
             for warning in self.warnings:
                 warning.warning_image.set_alpha(128)
                 screen.blit(warning.warning_image, warning.warning_rect)
-            
+
 
         self.explosionMaker.render(screen)
 
+
+class Wing:
+    def __init__(self, health, orientation, x, y):
+        self.maxHealth = health
+        self.health = self.maxHealth
+        self.finishedExplosion = False
+
+        self.wing_image = pygame.image.load("sprites/boss/" + orientation + ".png")
+        self.wing_image = pygame.transform.scale(self.wing_image, tuple(x/5 for x in self.wing_image.get_size()))
+
+        self.x = x
+        self.y = y
+
+        self.wing_rect = self.wing_image.get_rect()
+        self.wing_rect.x = x
+        self.wing_rect.y = y
+
+    def tick(self, dt):
+        self.wing_rect.x = self.x
+        self.wing_rect.y = self.y
+
+    def render(self, screen):
+        screen.blit(self.wing_image, self.wing_rect)
 
 
 class Warning:
@@ -314,4 +337,4 @@ class Warning:
         self.warning_rect = self.warning_image.get_rect()
 
     def followPos(self, rect):
-        self.warning_rect.topleft = rect.topleft 
+        self.warning_rect.topleft = rect.topleft
