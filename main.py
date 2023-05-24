@@ -26,7 +26,7 @@ timeToGoDown = 6
 timeToSpawn = 1.5
 timer = 0
 
-enemiesAreSpawning = False
+enemiesAreSpawning = True
 
 startAnimationTimer = 0
 startAnimationTimeToGoDown = 0.5
@@ -45,8 +45,8 @@ bulletRand = 96
 
 font = pygame.font.SysFont('Comic Sans MS', 30)
 enemyFactory = EnemyFactory(random.randint(2, 5))
-#enemyFactory.spawnLines(4, 4)
-#enemyFactory.spawnCheck(enemyRows)
+enemyFactory.spawnLines(4, 4)
+enemyFactory.spawnCheck(enemyRows)
 
 menu = Menu(screen, WIDTH, HEIGHT, font)
 
@@ -237,7 +237,7 @@ while running:
 
     timer += dt
 
-    if timer >= timeToGoDown and not enemiesAreSpawning:
+    if timer >= timeToGoDown and not enemiesAreSpawning and enemyFactory.boss != None:
         timer = 0
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
@@ -246,6 +246,7 @@ while running:
         enemyFactory.spawnCheck(enemyRows)
     elif enemiesAreSpawning and timer >= timeToSpawn:
         timer = 0
+        print("a")
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
                 if not enemy.y > player.y:
@@ -254,7 +255,7 @@ while running:
         if enemyFactory.rowsLeft <= 0:
             enemiesAreSpawning = False
     
-    enemyFactory.spawnCheck(enemyRows)
+    enemyFactory.spawnBossCheck(enemyRows)
     removeEnemyList = []
     for enemyRow in enemyRows:
         for enemy in enemyRow.enemies:
@@ -287,10 +288,11 @@ while running:
 
                 enemy_killed_sound.play()
 
-    #if not enemyRows and enemyFactory.rowsLeft <= 0:
-    #    enemyFactory.spawnLines(4, 4)
-    #    timer = 0
-    #    enemiesAreSpawning = True
+    if not enemyRows and enemyFactory.rowsLeft <= 0:
+        print("daddy")
+        enemyFactory.spawnLines(4, 4)
+        timer = 0
+        enemiesAreSpawning = False
 
     for enemyToRemove in removeEnemyList:
         for enemyRow in enemyRows:
@@ -313,7 +315,10 @@ while running:
 
         if enemyFactory.boss.finishedExplosion:
             enemyFactory.boss = None
-            enemyFactory.rowsSpawned = 0
+            enemyFactory.wavesSpawned = 0
+    if not enemyRows and enemyFactory.rowsLeft > 0:
+        enemiesAreSpawning = True
+
             
     pygame.display.update()
     dt = clock.tick(FPS) / 1000

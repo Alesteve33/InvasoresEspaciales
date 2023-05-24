@@ -11,8 +11,8 @@ class EnemyFactory:
         self.actualLevelRows = actualLevelRows
         self.rowsLeft= 0
 
-        self.rowsSpawned = 0
-        self.rowsForBoss = 0
+        self.wavesSpawned = 0
+        self.rowsForBoss = 1
 
         self.boss = None
 
@@ -24,18 +24,20 @@ class EnemyFactory:
         self.boss = Boss(100, -220, 3, 10, 20, 0)
 
     def spawnCheck(self, enemyRows):
-        if self.rowsSpawned == self.rowsForBoss and self.boss == None and len(enemyRows) == 0:
+
+        if self.rowsLeft > 0 and self.keepSpawning:
+            self.spawn(enemyRows)
+
+    def spawnBossCheck(self, enemyRows):
+        if self.wavesSpawned == self.rowsForBoss and self.boss == None and len(enemyRows) == 0:
             self.rowsLeft = 0
             self.spawnBoss()
 
         if not self.boss == None:
             self.rowsLeft = 0
 
-        if self.rowsLeft > 0 and self.keepSpawning:
-            self.spawn(enemyRows)
-            self.rowsSpawned += 1
-
     def spawnLines(self, minRows, maxRows):
+        self.wavesSpawned += 1
         self.rowsLeft = random.randint(minRows, maxRows)
 
     def spawn(self, enemyRows):
