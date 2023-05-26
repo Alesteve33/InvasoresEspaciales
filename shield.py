@@ -68,5 +68,5 @@ class Shield:
         if self.animation_timer > self.shieldMaxTime / 3:
             self.opacityTimer += dt
             self.animationSpeed += dt
-            self.actualAlpha = 100 * math.sin(self.opacityTimer*self.animationSpeed) + 155
+            self.actualAlpha = 100 * math.cos(self.opacityTimer*self.animationSpeed) + 155
             self.shield_image.set_alpha(self.actualAlpha)
