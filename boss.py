@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from bullet import Bullet
 
 from explosions import Explosions
@@ -236,7 +237,7 @@ class Boss:
                         self.enableLaser(True, dt)
         #Warnings
         for warning in self.warnings:
-            warning.timer += dt
+            warning.animate(dt)
             if warning.type == 1:
                 warning.followPos(self.left_laser_rect)
             elif warning.type == 2:
@@ -316,7 +317,6 @@ class Boss:
                 screen.blit(self.laser_image, self.right_laser_rect)
 
             for warning in self.warnings:
-                warning.warning_image.set_alpha(128)
                 warning.render(screen)
 
             screen.blit(self.boss_image, self.boss_rect)
@@ -334,7 +334,6 @@ class Wing:
 
         self.isExploding = False
         self.finishedExplosion = False
-
         self.wing_image = pygame.image.load("sprites/boss/" + orientation + ".png")
         self.wing_image = pygame.transform.scale(self.wing_image, tuple(x/5 for x in self.wing_image.get_size()))
 
@@ -366,12 +365,29 @@ class Wing:
 class Warning:
     def __init__(self, type):
         self.timer = 0
+        self.timeForPeriod = 0.5
+        self.actualAlpha = 0
         self.type = type  # 1 left, 2 right, 3 custom
         self.warning_image = pygame.image.load("sprites/fade.png")
         self.warning_rect = self.warning_image.get_rect()
-
+        
+        self.exclamation_image = pygame.image.load("sprites/exclamation.png")
+        self.exclamation_image = pygame.transform.scale(self.exclamation_image, (100, 100))
+        self.exclamation_rect = self.exclamation_image.get_rect()
+        self.exclamation_rect.center = self.warning_rect.center
+        
+        
     def followPos(self, rect):
         self.warning_rect.topleft = rect.topleft
+        self.exclamation_rect.center = self.warning_rect.center
 
     def render(self, screen):
         screen.blit(self.warning_image, self.warning_rect)
+        screen.blit(self.exclamation_image, self.exclamation_rect)
+
+    def animate(self, dt):
+        self.timer += dt
+        self.actualAlpha = 100 * math.sin(self.timer*8) + 155
+        self.warning_image.set_alpha(self.actualAlpha)
+        self.exclamation_image.set_alpha(self.actualAlpha)
+        self.exclamation_image.fill((200, 0, 0), special_flags=pygame.BLEND_ADD)

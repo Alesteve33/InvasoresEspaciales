@@ -57,7 +57,7 @@ class Player:
 
     def tick(self, deltaTime, bullets):
         self.shield.tick(deltaTime, self.x, self.y, self.size[0])
-        self.shield.animate()
+        self.shield.animate(deltaTime)
 
         self.time_since_last_shot += deltaTime
         self.player_rect.x = self.x
@@ -69,8 +69,7 @@ class Player:
                 if bullet.bullet_rect.colliderect(self.player_rect):
                     bulletsToDestroy.append(bullet)
                     if self.shield.isEnabled:
-                        self.shield.isEnabled = False
-                        self.shield.disableShieldSound.play()
+                        pass
                     else:
                         self.health -= bullet.damage
                         self.health_sound.play()

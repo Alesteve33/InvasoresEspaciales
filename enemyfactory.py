@@ -13,7 +13,7 @@ class EnemyFactory:
 
         self.wavesSpawned = 0
         self.rowsForBoss = 1
-
+        
         self.boss = None
 
         #Herramienta de debug, no usar esto para juego normal. Debe estar en True si no estás debugeando el boss

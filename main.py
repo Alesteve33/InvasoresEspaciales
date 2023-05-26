@@ -289,7 +289,6 @@ while running:
                 enemy_killed_sound.play()
 
     if not enemyRows and enemyFactory.rowsLeft <= 0:
-        print("daddy")
         enemyFactory.spawnLines(4, 4)
         timer = 0
         enemiesAreSpawning = False
