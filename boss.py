@@ -6,17 +6,13 @@ from bullet import Bullet
 from explosions import Explosions
 
 class Boss:
-    def __init__(self, x, y, boss_type, speed, health, direction):
+    def __init__(self, x, y, boss_type, speed, direction, difficulty):
         self.x = x
         self.y = y
         self.boss_type = boss_type
         self.speed = speed
 
         self.size = width, height = 404, 177
-
-        self.maxHealth = health
-
-        self.health = self.maxHealth
 
         self.isVisible = True
 
@@ -25,9 +21,6 @@ class Boss:
         self.animation_step = .1
 
         self.boss_image = pygame.transform.scale(pygame.image.load("sprites/boss/boss" + str(self.boss_type) + "_" + str(self.sprite_number) + ".png"), self.size)
-
-        self.rightWing = Wing(self.health / 3, "right", self.x, self.y, self)
-        self.leftWing = Wing(self.health / 3, "left", self.x, self.y, self)
 
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 0
@@ -59,7 +52,6 @@ class Boss:
         self.randomShootChance = 10 #0.1
         self.randomLaserChance = 1 #0.001
 
-
         self.laser_image = pygame.transform.scale(pygame.image.load("sprites/laser.png"), (46, 415))
         self.left_laser_rect = self.laser_image.get_rect()
         self.right_laser_rect = self.laser_image.get_rect()
@@ -74,6 +66,33 @@ class Boss:
         self.right_warning_enabled = False
         self.left_warning_enabled = False
 
+        self.maxHealth = -694201337
+        if difficulty == 0: #Easy
+            self.maxHealth = 15
+            self.randomShootChance = 5
+            self.warning_max_time = 3.5
+            self.maxLaserTime = 2
+        elif difficulty == 1: #Normal
+            self.maxHealth = 20
+            self.randomShootChance = 10
+            self.warning_max_time = 2.5
+            self.maxLaserTime = 3
+        elif difficulty == 2: #Hard
+            self.maxHealth = 30
+            self.randomShootChance = 20
+            self.warning_max_time = 1.5
+            self.maxLaserTime = 4
+        elif difficulty == 3: #Expert
+            self.maxHealth = 40
+            self.randomShootChance = 30
+            self.warning_max_time = 0.5
+            self.maxLaserTime = 5
+
+        self.health = self.maxHealth
+
+        self.rightWing = Wing(self.health / 3, "right", self.x, self.y, self)
+        self.leftWing = Wing(self.health / 3, "left", self.x, self.y, self)
+
         pygame.Rect(self.boss_rect)
 
         self.shoot_cooldown = 0.4
@@ -83,7 +102,6 @@ class Boss:
         if player.x - player.size[0] - 10 > self.left_laser_rect.x and player.x + player.size[0] + 10 < self.right_laser_rect.x and self.rightTimeSinceDisabled > self.laserCooldown and not self.left_warning_enabled and not self.right_warning_enabled and not self.rightLaserEnabled and not self.leftLaserEnabled:
             self.enableLaser(True, dt)
             self.enableLaser(False, dt)
-            print("AA")
 
         #if random.randint(0, 1000) > 1000 - self.randomLaserChance and self.timeSinceDisable > self.laserCooldown:
         #    self.enableLaser(True, dt)
@@ -235,6 +253,7 @@ class Boss:
                     bullets.remove(bullet)
                     if not self.right_warning_enabled and not self.rightLaserEnabled:
                         self.enableLaser(True, dt)
+
         #Warnings
         for warning in self.warnings:
             warning.animate(dt)
@@ -242,7 +261,7 @@ class Boss:
                 warning.followPos(self.left_laser_rect)
             elif warning.type == 2:
                 warning.followPos(self.right_laser_rect)
-        for warning in self.warnings:
+
             if warning.timer > self.warning_max_time:
                 self.warnings.remove(warning)
                 if warning.type == 1:
@@ -370,13 +389,13 @@ class Warning:
         self.type = type  # 1 left, 2 right, 3 custom
         self.warning_image = pygame.image.load("sprites/fade.png")
         self.warning_rect = self.warning_image.get_rect()
-        
+
         self.exclamation_image = pygame.image.load("sprites/exclamation.png")
         self.exclamation_image = pygame.transform.scale(self.exclamation_image, (100, 100))
         self.exclamation_rect = self.exclamation_image.get_rect()
         self.exclamation_rect.center = self.warning_rect.center
-        
-        
+
+
     def followPos(self, rect):
         self.warning_rect.topleft = rect.topleft
         self.exclamation_rect.center = self.warning_rect.center

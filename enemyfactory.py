@@ -6,22 +6,24 @@ from boss import Boss
 
 class EnemyFactory:
 
-    def __init__(self, actualLevelRows):
+    def __init__(self, actualLevelRows, difficulty):
         self.currentLevelRows = 0
         self.actualLevelRows = actualLevelRows
         self.rowsLeft= 0
 
         self.wavesSpawned = 0
         self.rowsForBoss = 1
-        
+
         self.boss = None
+
+        self.difficulty = difficulty
 
         #Herramienta de debug, no usar esto para juego normal. Debe estar en True si no estás debugeando el boss
         self.keepSpawning = True
 
 
     def spawnBoss(self):
-        self.boss = Boss(100, -220, 3, 10, 20, 0)
+        self.boss = Boss(100, -220, 3, 10, 0, self.difficulty)
 
     def spawnCheck(self, enemyRows):
 
@@ -39,6 +41,9 @@ class EnemyFactory:
     def spawnLines(self, minRows, maxRows):
         self.wavesSpawned += 1
         self.rowsLeft = random.randint(minRows, maxRows)
+
+    def updateDifficulty(self, difficulty):
+        self.difficulty = difficulty
 
     def spawn(self, enemyRows):
         if not self.keepSpawning:

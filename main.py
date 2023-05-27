@@ -10,6 +10,7 @@ from background import Background
 from fade import Fade
 from stats import Stats
 from boss import Boss
+from shield import Shield
 
 pygame.init()
 pygame.font.init()
@@ -44,11 +45,12 @@ direction = 0
 bulletRand = 96
 
 font = pygame.font.SysFont('Comic Sans MS', 30)
-enemyFactory = EnemyFactory(random.randint(2, 5))
-enemyFactory.spawnLines(4, 4)
-enemyFactory.spawnCheck(enemyRows)
 
 menu = Menu(screen, WIDTH, HEIGHT, font)
+
+enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty)
+enemyFactory.spawnLines(4, 4)
+enemyFactory.spawnCheck(enemyRows)
 
 fade = Fade()
 
@@ -61,6 +63,24 @@ enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
 
 running = True
 while running:
+    enemyFactory.updateDifficulty(menu.difficulty)
+
+    if menu.difficulty == 0:
+        player.shield.shieldMaxTime = 7.5
+        player.shield.cooldown = 4.5
+        bulletRand = 98
+    elif menu.difficulty == 1:
+        player.shield.shieldMaxTime = 6
+        player.shield.cooldown = 5
+        bulletRand = 96
+    elif menu.difficulty == 2:
+        player.shield.shieldMaxTime = 5
+        player.shield.cooldown = 8
+        bulletRand = 90
+    elif menu.difficulty == 3:
+        player.shield.shieldMaxTime = 4
+        player.shield.cooldown = 10
+        bulletRand = 80
 
     shoot_sound.set_volume(menu.volume * 0.01)
     explosion_sound.set_volume(menu.volume * 0.01)
@@ -159,9 +179,11 @@ while running:
             menu.isInMenu = True
             menu.isGameOver = True
 
+            player.shield = Shield()
+
             menu.game_over_sound.play()
 
-            enemyFactory = EnemyFactory(random.randint(2, 5))
+            enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty)
             enemyFactory.spawnLines(4, 4)
             enemyFactory.spawnCheck(enemyRows)
 
@@ -246,7 +268,6 @@ while running:
         enemyFactory.spawnCheck(enemyRows)
     elif enemiesAreSpawning and timer >= timeToSpawn:
         timer = 0
-        print("a")
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
                 if not enemy.y > player.y:
@@ -254,7 +275,7 @@ while running:
         enemyFactory.spawnCheck(enemyRows)
         if enemyFactory.rowsLeft <= 0:
             enemiesAreSpawning = False
-    
+
     enemyFactory.spawnBossCheck(enemyRows)
     removeEnemyList = []
     for enemyRow in enemyRows:
@@ -318,7 +339,7 @@ while running:
     if not enemyRows and enemyFactory.rowsLeft > 0:
         enemiesAreSpawning = True
 
-            
+
     pygame.display.update()
     dt = clock.tick(FPS) / 1000
 

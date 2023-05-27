@@ -17,7 +17,7 @@ class Shield:
         self.shieldMaxTime = 6
         self.opacityTimer = 0
 
-        self.cooldown_timer = 10
+        self.cooldown_timer = 1000
         self.cooldown = 5
 
         self.isEnabled = False
@@ -56,8 +56,6 @@ class Shield:
         self.isEnabled = False
 
     def animate(self, dt):
-        print(self.animation_timer)
-        
         if self.animation_timer > self.animation_step:
             self.animation_step += 0.2
             if self.sprite_number == 6:

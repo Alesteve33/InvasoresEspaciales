@@ -13,6 +13,7 @@ class Menu:
         self.isGameOver = False
         self.isInStats = False
 
+        self.difficulty = 1 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
         self.holdShoot = True
         self.volume = 50
         self.musicOn = True
@@ -30,7 +31,7 @@ class Menu:
         self.biggerFont = pygame.font.SysFont('Comic Sans MS', 60)
         self.titleFont = pygame.font.SysFont('Arial', 70)
 
-        for i in range(self.buttonAmount):
+        for i in range(self.buttonAmount + 1):
             self.colors.append((255,255,255))
 
         self.skull_image = pygame.transform.scale(pygame.image.load("sprites/skull.png"), (128, 128))
@@ -39,13 +40,24 @@ class Menu:
         self.arrow_image = pygame.transform.scale(pygame.image.load("sprites/arrow.png"), (32, 32))
         self.arrow_rect = self.arrow_image.get_rect()
         self.arrow_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 - 50
-        self.arrow_rect.y = self.sh/4 + 155
+        self.arrow_rect.y = self.sh/4 + 205
 
 
         self.arrow_2_image = pygame.transform.rotate(self.arrow_image, 180)
         self.arrow_2_rect = self.arrow_2_image.get_rect()
         self.arrow_2_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 195
-        self.arrow_2_rect.y = self.sh/4 + 155
+        self.arrow_2_rect.y = self.sh/4 + 205
+
+        self.arrow_3_image = pygame.transform.scale(pygame.image.load("sprites/arrow.png"), (32, 32))
+        self.arrow_3_rect = self.arrow_image.get_rect()
+        self.arrow_3_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 - 75
+        self.arrow_3_rect.y = self.sh/4 + 105
+
+        self.arrow_4_image = pygame.transform.rotate(self.arrow_image, 180)
+        self.arrow_4_rect = self.arrow_2_image.get_rect()
+        self.arrow_4_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 220
+        self.arrow_4_rect.y = self.sh/4 + 105
+
 
     def handleKey(self, keys, deltaTime, enemyRows, player, bullets, spawner):
         for event in pygame.event.get():
@@ -65,6 +77,7 @@ class Menu:
                             self.isInMenu = False
                             return True
                         elif self.buttonSelected == 1: #SETTINGS:
+                            self.buttonSelected = 0
                             self.isInSettings = True
                             continue
                         elif self.buttonSelected == 2: #STATS
@@ -75,9 +88,9 @@ class Menu:
                             exit()
                     if self.isInSettings and self.buttonSelected == 0:
                         self.holdShoot = not self.holdShoot
-                    elif self.isInSettings and self.buttonSelected == 2:
-                        self.musicOn = not self.musicOn
                     elif self.isInSettings and self.buttonSelected == 3:
+                        self.musicOn = not self.musicOn
+                    elif self.isInSettings and self.buttonSelected == 4:
                         self.isInSettings = False
                         self.buttonSelected = 1
 
@@ -110,7 +123,25 @@ class Menu:
     def render(self, screen, font, score, dt, stats):
         keys = pygame.key.get_pressed()
         self.volumeTimer += dt
+
         if self.volumeTimer > self.volumeCooldown and self.buttonSelected == 1:
+            if keys[pygame.K_LEFT]:
+                self.volumeTimer = 0
+                if self.isInSettings and self.volume > 0:
+                    self.menu_select_sound.play()
+                    self.difficulty -= 1
+            elif keys[pygame.K_RIGHT]:
+                self.volumeTimer = 0
+                if self.isInSettings and self.volume < 100:
+                    self.menu_select_sound.play()
+                    self.difficulty += 1
+
+            if self.difficulty < 0:
+                self.difficulty = 3
+            elif self.difficulty > 3:
+                self.difficulty = 0
+
+        if self.volumeTimer > self.volumeCooldown and self.buttonSelected == 2:
             if keys[pygame.K_LEFT]:
                 self.volumeTimer = 0
                 if self.isInSettings and self.volume > 0:
@@ -122,16 +153,28 @@ class Menu:
                     self.menu_select_sound.play()
                     self.volume += 1
 
-        if self.buttonSelected >= self.buttonAmount:
+        #Deberíamos rehacer este fix pero no se me ocurre nada mejor
+        fix = 0
+        if self.isInSettings:
+            fix = 1
+        if self.buttonSelected >= self.buttonAmount + fix:
             self.buttonSelected = 0
         elif self.buttonSelected < 0:
-            self.buttonSelected = self.buttonAmount - 1
+            self.buttonSelected = self.buttonAmount - 1 + fix
 
 
         screen.fill((0,0,0))
         if self.isInSettings:
             settingsText = font.render("Settings", False, (255, 155, 155))
-            screen.blit(settingsText, (screen.get_size()[0]/2 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 200))
+            screen.blit(settingsText, (screen.get_size()[0]/2 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 250))
+
+            difficultyTextMode = "Easy"
+            if self.difficulty == 1:
+                difficultyTextMode = "Normal"
+            elif self.difficulty == 2:
+                difficultyTextMode = "Hard"
+            elif self.difficulty == 3:
+                difficultyTextMode = "Expert"
 
             toggleAttackText = "ON"
             if not self.holdShoot:
@@ -142,17 +185,22 @@ class Menu:
                 toggleMusicText = "OFF"
 
             holdAttackText = font.render("Hold attack: " + toggleAttackText , False, self.colors[0])
-            volumeText = font.render("Volume: " + str(self.volume) + "%", False, self.colors[1])
-            musicText = font.render("Music: " + toggleMusicText, False, self.colors[2])
-            exitText = font.render("Go back", False, self.colors[3])
+            difficultyText = font.render("Difficulty: " + difficultyTextMode, False, self.colors[1])
+            volumeText = font.render("Volume: " + str(self.volume) + "%", False, self.colors[2])
+            musicText = font.render("Music: " + toggleMusicText, False, self.colors[3])
+            exitText = font.render("Go back", False, self.colors[4])
 
-            screen.blit(holdAttackText, (screen.get_size()[0]/2 - font.size("Hold attack: " + toggleAttackText)[0]/2, screen.get_size()[1]/4 + 50))
-            screen.blit(volumeText, (screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2, screen.get_size()[1]/4 + 150))
-            screen.blit(musicText, (screen.get_size()[0]/2 - font.size("Music: " + toggleMusicText)[0]/2, screen.get_size()[1]/4 + 250))
-            screen.blit(exitText, (screen.get_size()[0]/2 - font.size("Go back")[0]/2, screen.get_size()[1]/4 + 350))
+            screen.blit(holdAttackText, (screen.get_size()[0]/2 - font.size("Hold attack: " + toggleAttackText)[0]/2, screen.get_size()[1]/4))
+            screen.blit(difficultyText, (screen.get_size()[0]/2 - font.size("Difficulty: " + difficultyTextMode)[0]/2, screen.get_size()[1]/4 + 100))
+            screen.blit(volumeText, (screen.get_size()[0]/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2, screen.get_size()[1]/4 + 200))
+            screen.blit(musicText, (screen.get_size()[0]/2 - font.size("Music: " + toggleMusicText)[0]/2, screen.get_size()[1]/4 + 300))
+            screen.blit(exitText, (screen.get_size()[0]/2 - font.size("Go back")[0]/2, screen.get_size()[1]/4 + 400))
 
             screen.blit(self.arrow_image, self.arrow_rect)
             screen.blit(self.arrow_2_image, self.arrow_2_rect)
+
+            screen.blit(self.arrow_3_image, self.arrow_3_rect)
+            screen.blit(self.arrow_4_image, self.arrow_4_rect)
 
         if self.isInStats:
             statsText = font.render("Statistics", False, (255, 155, 155))
@@ -192,7 +240,7 @@ class Menu:
 
         colorNotSelected = (255, 255, 255)
         colorSelected = (204, 255, 0)
-        for i in range(self.buttonAmount):
+        for i in range(self.buttonAmount + 1):
             if self.buttonSelected == i:
                 self.colors[i] = colorSelected
             else:
