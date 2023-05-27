@@ -87,7 +87,7 @@ class Boss:
         elif difficulty == 3: #Expert
             self.maxHealth = 40
             self.randomShootChance = 30
-            self.warning_max_time = 0.5
+            self.warning_max_time = 1
             self.maxLaserTime = 5
 
         self.health = self.maxHealth

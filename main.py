@@ -93,10 +93,10 @@ while running:
     player.health_sound.set_volume(menu.volume * 0.01)
     player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
     player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
-    pygame.mixer.music.set_volume(menu.volume * 0.005)
+    pygame.mixer.music.set_volume(0)
 
     if menu.musicOn:
-        pygame.mixer.music.set_volume(0)
+        pygame.mixer.music.set_volume(menu.volume * 0.003)
 
     if not menu.isInMenu:
         fade.tick()

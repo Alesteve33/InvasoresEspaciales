@@ -117,6 +117,6 @@ class Player:
         elif self.menu.difficulty == 2:
            scoreToAdd = 3 * multiplier
         elif self.menu.difficulty == 3:
-           scoreToAdde = 5 * multiplier
+           scoreToAdd = 5 * multiplier
         self.score += scoreToAdd
         self.stats.totalScore += scoreToAdd
