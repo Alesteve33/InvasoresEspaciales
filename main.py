@@ -56,7 +56,8 @@ fade = Fade()
 
 stats = Stats()
 
-
+pygame.mixer.music.load("sounds/music/menu1.mp3")
+pygame.mixer.music.play(5)
 shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
 enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
@@ -90,6 +91,10 @@ while running:
     player.health_sound.set_volume(menu.volume * 0.01)
     player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
     player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
+    pygame.mixer.music.set_volume(menu.volume * 0.005)
+
+    if menu.musicOn:
+        pygame.mixer.music.set_volume(0)
 
     if not menu.isInMenu:
         fade.tick()
