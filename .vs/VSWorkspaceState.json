@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\sprites"
   ],
-  "SelectedNode": "\\main.py",
+  "SelectedNode": "\\boss.py",
   "PreviewInSolutionExplorer": false
 }

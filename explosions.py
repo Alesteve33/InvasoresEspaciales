@@ -13,8 +13,10 @@ class Explosions():
             explosion.render(screen)
 
     def makeExplosion(self, x, y, size):
-        self.explosions.append(Explosion(x, y, size))
-
+        explosion = Explosion(x, y, size)
+        self.explosions.append(explosion)
+        return explosion
+        
 class Explosion():
     def __init__(self, x, y, size):
         self.x = x

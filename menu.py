@@ -18,8 +18,9 @@ class Menu:
         self.volume = 50
         self.musicOn = True
 
-        self.volumeCooldown = 0.1
+        self.volumeCooldown = 0.075
         self.volumeTimer = 0
+        self.difficultyTimer = 0.2
 
         self.screen = screen
         self.sw = sw
@@ -124,7 +125,7 @@ class Menu:
         keys = pygame.key.get_pressed()
         self.volumeTimer += dt
 
-        if self.volumeTimer > self.volumeCooldown and self.buttonSelected == 1:
+        if self.volumeTimer > self.difficultyTimer and self.buttonSelected == 1:
             if keys[pygame.K_LEFT]:
                 self.volumeTimer = 0
                 if self.isInSettings and self.volume > 0:

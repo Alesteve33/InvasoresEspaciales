@@ -3,7 +3,7 @@ from bullet import Bullet
 from shield import Shield
 
 class Player:
-    def __init__(self, x, y, speed, health):
+    def __init__(self, x, y, speed, health, menu, stats):
         self.x = x
         self.y = y
 
@@ -12,7 +12,9 @@ class Player:
         self.health = health
 
         self.shield = Shield()
-
+        
+        self.menu = menu
+        self.stats = stats
         self.shoot_cooldown = 0.4
         self.time_since_last_shot = 1
 
@@ -105,3 +107,16 @@ class Player:
         if self.time_since_last_shot > self.shoot_cooldown:
             self.time_since_last_shot = 0
             return Bullet(self.player_rect.centerx - 8, self.player_rect.centery - 20, 1000, False)
+
+    def addScore(self, multiplier):
+        scoreToAdd = 0
+        if self.menu.difficulty == 0:
+           scoreToAdd = 1 * multiplier
+        elif self.menu.difficulty == 1:
+           scoreToAdd = 2 * multiplier
+        elif self.menu.difficulty == 2:
+           scoreToAdd = 3 * multiplier
+        elif self.menu.difficulty == 3:
+           scoreToAdde = 5 * multiplier
+        self.score += scoreToAdd
+        self.stats.totalScore += scoreToAdd

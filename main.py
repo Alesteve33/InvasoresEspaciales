@@ -38,7 +38,6 @@ bullets = []
 
 background = Background(WIDTH, HEIGHT)
 
-player = Player(WIDTH/2-80, 585, 250.0, 4)
 
 direction = 0
 
@@ -48,13 +47,16 @@ font = pygame.font.SysFont('Comic Sans MS', 30)
 
 menu = Menu(screen, WIDTH, HEIGHT, font)
 
-enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty)
+fade = Fade()
+
+stats = Stats(menu)
+player = Player(WIDTH/2-80, 585, 250.0, 4, menu, stats)
+
+enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
 enemyFactory.spawnLines(4, 4)
 enemyFactory.spawnCheck(enemyRows)
 
-fade = Fade()
 
-stats = Stats()
 
 pygame.mixer.music.load("sounds/music/menu1.mp3")
 pygame.mixer.music.play(5)
@@ -188,7 +190,7 @@ while running:
 
             menu.game_over_sound.play()
 
-            enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty)
+            enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
             enemyFactory.spawnLines(4, 4)
             enemyFactory.spawnCheck(enemyRows)
 
@@ -324,8 +326,7 @@ while running:
             for enemy in enemyRow.enemies:
                 if enemy == enemyToRemove:
                     enemyRow.enemies.remove(enemyToRemove)
-                    player.score += 1
-                    stats.totalScore += 1
+                    player.addScore(1)
                 if not enemyRow.enemies:
                     enemyRows.remove(enemyRow)
 

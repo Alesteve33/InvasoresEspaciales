@@ -2,15 +2,17 @@ import pygame
 import random
 import math
 from bullet import Bullet
-
+from stats import Stats
 from explosions import Explosions
 
 class Boss:
-    def __init__(self, x, y, boss_type, speed, direction, difficulty):
+    def __init__(self, x, y, boss_type, speed, direction, difficulty, player):
         self.x = x
         self.y = y
         self.boss_type = boss_type
         self.speed = speed
+
+        self.player = player
 
         self.size = width, height = 404, 177
 
@@ -137,12 +139,11 @@ class Boss:
             pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2 - 4, height-4))
 
         x = screen.get_size()[0] - screen.get_size()[0] / 8 - width
-        y = 70
 
         width2 = width - ((1 - (self.rightWing.health / self.rightWing.maxHealth)) * width)
 
         if width2 > 0:
-            pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width-4, height-4),  4)
+            pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
             pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
 
     def enableLaser(self, isRightLaser, dt):
@@ -180,10 +181,10 @@ class Boss:
         self.rightWing.tick(dt)
         self.leftWing.tick(dt)
 
-        if self.health <= 0:
+        if self.health <= 0 and not self.isExploding:
             self.isExploding = True
-
-
+            self.player.addScore(25)
+            self.warnings = None
 
         if self.isExploding:
             self.explosionTimer += dt
@@ -362,23 +363,28 @@ class Wing:
         self.wing_rect = self.wing_image.get_rect()
         self.wing_rect.x = x
         self.wing_rect.y = y
-
+        self.explosion = None
         self.boss = boss
 
     def tick(self, dt):
         self.wing_rect.x = self.x
         self.wing_rect.y = self.y
 
-        if self.health <= 0:
+        if self.health <= 0 and not self.isExploding:
             self.isExploding = True
+            self.boss.player.addScore(8)
 
-        if self.isExploding and not self.finishedExplosion:
-            self.boss.explosionMaker.makeExplosion(self.x - 120, self.y - 120, 400)
-            self.finishedExplosion = True
 
     def render(self, screen):
+        if self.isExploding and not self.finishedExplosion:
+            self.explosion = self.boss.explosionMaker.makeExplosion(self.x - 140, self.y - 140, 400)
+            print(self.explosion)
+            self.finishedExplosion = True
         if self.health > 0:
             screen.blit(self.wing_image, self.wing_rect)
+        elif self.isExploding:
+            if self.explosion.currentAnimationFrame < 7:
+                screen.blit(self.wing_image, self.wing_rect)
 
 
 class Warning:
