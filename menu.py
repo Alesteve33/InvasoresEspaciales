@@ -13,7 +13,7 @@ class Menu:
         self.isGameOver = False
         self.isInStats = False
 
-        self.difficulty = 1 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
+        self.difficulty = 0 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
         self.holdShoot = True
         self.volume = 50
         self.musicOn = True

@@ -67,7 +67,7 @@ class Boss:
         self.warnings = []
         self.right_warning_enabled = False
         self.left_warning_enabled = False
-
+            
         self.maxHealth = -694201337
         if difficulty == 0: #Easy
             self.maxHealth = 15
@@ -117,15 +117,16 @@ class Boss:
                         bullets.append(bs)
 
     def drawBossBar(self, screen):
-        x = screen.get_size()[0] / 5
-        width = screen.get_size()[0] - 2 * x
-        y = 20
-        height = 30
+        if not self.wings:
+            x = screen.get_size()[0] / 5
+            width = screen.get_size()[0] - 2 * x
+            y = 20
+            height = 30
 
-        width2 = width - ((1 - (self.health / self.maxHealth)) * width)
+            width2 = width - ((1 - (self.health / self.maxHealth)) * width)
 
-        pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
-        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x + 5, y + 5, width2 - 10, height - 10))
+            pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
+            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x + 5, y + 5, width2 - 10, height - 10))
 
 
         y = 70
@@ -162,7 +163,8 @@ class Boss:
 
         warning.warning_image = pygame.transform.scale(warning.warning_image, self.laser_image.get_size())
         warning.warning_rect = warning.warning_image.get_rect()
-        self.warnings.append(warning)
+        if self.warnings is not None:
+            self.warnings.append(warning)
 
 
     def tick(self, dt, player, bullets):
@@ -177,15 +179,15 @@ class Boss:
 
         for wing in self.wings:
 
-            wing.tick(dt)
             if wing.orientation == "right":
-                wing.wing_rect.x = self.x + 374
-                wing.wing_rect.y = self.y + 100
+                wing.x = self.x + 377
+                wing.y = self.y + 102
             else:
-                wing.wing_rect.x = self.x - 63
-                wing.wing_rect.y = self.y + 100
+                wing.x = self.x - 66
+                wing.y = self.y + 102
+            wing.tick(dt)
 
-            if wing.isExploding:
+            if wing.finishedExplosion:
                 self.wings.remove(wing)
 
         if self.health <= 0 and not self.isExploding:
@@ -201,18 +203,17 @@ class Boss:
                 if self.explosionsToDo >= self.explosionCount:
                     self.explosionTimer = 0
                     self.explosionCount += 1
-                    self.explosionMaker.makeExplosion(self.x + random.randint(-60, 370),
-                        self.y + random.randint(0, 30),
-                        random.randint(100, 400))
-
-            self.explosionMaker.tick(dt)
-
+                    self.explosionMaker.makeExplosion(self.x + random.randint(-160, 270),
+                        self.y + random.randint(-50, 0),
+                        random.randint(200, 300))
 
             if self.explosionCount >= self.hideAfterExplosionCount:
                 self.isVisible = False
 
             if self.explosionsToDo <= self.explosionCount and self.explosionTimer > self.waitAfterFinalExplosion:
                 self.finishedExplosion = True
+
+            self.explosionMaker.tick(dt)
             return
 
         if self.isOnSpawnAnimation:
@@ -246,11 +247,9 @@ class Boss:
             self.rightLaserTimer = round(random.uniform(0, self.maxLaserTime), 2)
             self.rightTimeSinceDisabled = 0
 
-
-
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
-                if bullet.bullet_rect.colliderect(self.boss_rect) and self.wings == None:
+                if bullet.bullet_rect.colliderect(self.boss_rect) and not self.wings:
                     self.health -= bullet.damage
                     bullets.remove(bullet)
                 elif self.wings != None:
@@ -347,14 +346,13 @@ class Boss:
             if self.rightLaserEnabled:
                 screen.blit(self.laser_image, self.right_laser_rect)
 
-            if self.warnings != None:
+            if self.warnings is not None:
                 for warning in self.warnings:
                     warning.render(screen)
             screen.blit(self.boss_image, self.boss_rect)
 
             for wing in self.wings:
                 wing.render(screen)
-
 
         self.explosionMaker.render(screen)
 
@@ -365,6 +363,7 @@ class Wing:
         self.health = self.maxHealth
         self.orientation = orientation
         self.isExploding = False
+        self.isDead = False
         self.finishedExplosion = False
         self.wing_image = pygame.image.load("sprites/boss/" + orientation + ".png")
         self.wing_image = pygame.transform.scale(self.wing_image, tuple(x/5 for x in self.wing_image.get_size()))
@@ -381,24 +380,23 @@ class Wing:
     def tick(self, dt):
         self.wing_rect.x = self.x
         self.wing_rect.y = self.y
-
-        if self.isExploding and not self.finishedExplosion:
+        if self.isDead and not self.isExploding:
             self.explosion = self.boss.explosionMaker.makeExplosion(self.x - 145, self.y - 145, 400)
-            print(self.explosion)
-            self.finishedExplosion = True
+            self.isExploding = True
 
 
     def render(self, screen):
         if self.health > 0:
             screen.blit(self.wing_image, self.wing_rect)
-        elif not self.isExploding:
-            self.isExploding = True
+        elif not self.isDead:
+            self.isDead = True
             self.boss.player.addScore(8)
-        elif self.isExploding:
+            screen.blit(self.wing_image, self.wing_rect)
+        elif self.isDead:
             if self.explosion.currentAnimationFrame < 8:
                 screen.blit(self.wing_image, self.wing_rect)
-        else:
-            print("a")
+            elif self.explosion.currentAnimationFrame >= 8:
+                self.finishedExplosion = True
 
 
 class Warning:

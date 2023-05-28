@@ -53,7 +53,7 @@ stats = Stats(menu)
 player = Player(WIDTH/2-80, 585, 250.0, 4, menu, stats)
 
 enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
-enemyFactory.spawnLines(4, 4)
+enemyFactory.spawnLines(4, 6)
 enemyFactory.spawnCheck(enemyRows)
 
 
@@ -166,6 +166,8 @@ while running:
                 for enemy in enemyRow.enemies:
                     enemy.canShoot = True
             isOnStartAnimation = False
+            enemiesAreSpawning = False
+            enemyFactory.wavesSpawned = 1
 
         fade.render(screen)
 
@@ -317,7 +319,7 @@ while running:
                 enemy_killed_sound.play()
 
     if not enemyRows and enemyFactory.rowsLeft <= 0 and enemyFactory.wavesSpawned < enemyFactory.wavesForBoss:
-        enemyFactory.spawnLines(4, 4)
+        enemyFactory.spawnLines(4, 6)
         timer = 0
         enemiesAreSpawning = False
 
