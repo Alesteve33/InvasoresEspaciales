@@ -336,8 +336,9 @@ class Boss:
             if self.rightLaserEnabled:
                 screen.blit(self.laser_image, self.right_laser_rect)
 
-            for warning in self.warnings:
-                warning.render(screen)
+            if self.warnings is not None:
+                for warning in self.warnings:
+                    warning.render(screen)
 
             screen.blit(self.boss_image, self.boss_rect)
 
