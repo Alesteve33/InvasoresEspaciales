@@ -92,8 +92,9 @@ class Boss:
 
         self.health = self.maxHealth
 
-        self.rightWing = Wing(self.health / 3, "right", self.x, self.y, self)
-        self.leftWing = Wing(self.health / 3, "left", self.x, self.y, self)
+        self.wings = [] # 1 RIGHT | 2 LEFT
+        self.wings.append(Wing(self.health / 3, "right", self.x, self.y, self))
+        self.wings.append(Wing(self.health / 3, "left", self.x, self.y, self))
 
         pygame.Rect(self.boss_rect)
 
@@ -127,24 +128,27 @@ class Boss:
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x + 5, y + 5, width2 - 10, height - 10))
 
 
-        x = screen.get_size()[0] / 8
         y = 70
         width = screen.get_size()[0] / 5
         height = 15
+        
+        for wing in self.wings:
+            if wing.orientation == "left":
+                x = screen.get_size()[0] / 8
 
-        width2 = width - ((1 - (self.leftWing.health / self.leftWing.maxHealth)) * width)
+                width2 = width - ((1 - (wing.health / wing.maxHealth)) * width)
 
-        if width2 > 0:
-            pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
-            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2 - 4, height-4))
+                if width2 > 0:
+                    pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
+                    pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2 - 4, height-4))
+            else:
+                x = screen.get_size()[0] - screen.get_size()[0] / 8 - width
 
-        x = screen.get_size()[0] - screen.get_size()[0] / 8 - width
+                width2 = width - ((1 - (wing.health / wing.maxHealth)) * width)
 
-        width2 = width - ((1 - (self.rightWing.health / self.rightWing.maxHealth)) * width)
-
-        if width2 > 0:
-            pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
-            pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
+                if width2 > 0:
+                    pygame.draw.rect(screen, (20, 20, 20), pygame.Rect(x, y, width, height),  4)
+                    pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(x+2, y+2, width2-4, height-4))
 
     def enableLaser(self, isRightLaser, dt):
         if isRightLaser:
@@ -171,20 +175,25 @@ class Boss:
         self.right_laser_rect.x = self.x + 279
         self.right_laser_rect.y = self.y + 120
 
-        self.rightWing.x = self.x + 374
-        self.leftWing.x = self.x - 63
+        for wing in self.wings:
 
-        self.rightWing.y = self.y + 100
-        self.leftWing.y = self.y + 100
+            wing.tick(dt)
+            if wing.orientation == "right":
+                wing.wing_rect.x = self.x + 374
+                wing.wing_rect.y = self.y + 100
+            else:
+                wing.wing_rect.x = self.x - 63
+                wing.wing_rect.y = self.y + 100
 
-
-        self.rightWing.tick(dt)
-        self.leftWing.tick(dt)
+            if wing.isExploding:
+                self.wings.remove(wing)
 
         if self.health <= 0 and not self.isExploding:
             self.isExploding = True
             self.player.addScore(25)
             self.warnings = None
+            self.leftLaserEnabled = False
+            self.rightLaserEnabled = False
 
         if self.isExploding:
             self.explosionTimer += dt
@@ -241,19 +250,21 @@ class Boss:
 
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
-                if bullet.bullet_rect.colliderect(self.boss_rect) and self.leftWing.finishedExplosion and self.rightWing.finishedExplosion:
+                if bullet.bullet_rect.colliderect(self.boss_rect) and self.wings == None:
                     self.health -= bullet.damage
                     bullets.remove(bullet)
-                if bullet.bullet_rect.colliderect(self.leftWing.wing_rect):
-                    self.leftWing.health -= bullet.damage
-                    if not self.left_warning_enabled and not self.leftLaserEnabled:
-                        self.enableLaser(False, dt)
-                    bullets.remove(bullet)
-                if bullet.bullet_rect.colliderect(self.rightWing.wing_rect):
-                    self.rightWing.health -= bullet.damage
-                    bullets.remove(bullet)
-                    if not self.right_warning_enabled and not self.rightLaserEnabled:
-                        self.enableLaser(True, dt)
+                elif self.wings != None:
+                    for wing in self.wings:
+                        if bullet.bullet_rect.colliderect(wing.wing_rect):
+                            wing.health -= bullet.damage
+                            if wing.orientation == "right":
+                                if not self.right_warning_enabled and not self.rightLaserEnabled:
+                                    self.enableLaser(True, dt)
+                            else:
+                                if not self.left_warning_enabled and not self.leftLaserEnabled:
+                                    self.enableLaser(False, dt)
+                            bullets.remove(bullet)
+
 
         #Warnings
         for warning in self.warnings:
@@ -336,13 +347,14 @@ class Boss:
             if self.rightLaserEnabled:
                 screen.blit(self.laser_image, self.right_laser_rect)
 
-            for warning in self.warnings:
-                warning.render(screen)
-
+            if self.warnings != None:
+                for warning in self.warnings:
+                    warning.render(screen)
             screen.blit(self.boss_image, self.boss_rect)
 
-            self.rightWing.render(screen)
-            self.leftWing.render(screen)
+            for wing in self.wings:
+                wing.render(screen)
+
 
         self.explosionMaker.render(screen)
 
@@ -351,7 +363,7 @@ class Wing:
     def __init__(self, health, orientation, x, y, boss):
         self.maxHealth = health
         self.health = self.maxHealth
-
+        self.orientation = orientation
         self.isExploding = False
         self.finishedExplosion = False
         self.wing_image = pygame.image.load("sprites/boss/" + orientation + ".png")
@@ -370,21 +382,23 @@ class Wing:
         self.wing_rect.x = self.x
         self.wing_rect.y = self.y
 
-        if self.health <= 0 and not self.isExploding:
-            self.isExploding = True
-            self.boss.player.addScore(8)
+        if self.isExploding and not self.finishedExplosion:
+            self.explosion = self.boss.explosionMaker.makeExplosion(self.x - 145, self.y - 145, 400)
+            print(self.explosion)
+            self.finishedExplosion = True
 
 
     def render(self, screen):
-        if self.isExploding and not self.finishedExplosion:
-            self.explosion = self.boss.explosionMaker.makeExplosion(self.x - 140, self.y - 140, 400)
-            print(self.explosion)
-            self.finishedExplosion = True
         if self.health > 0:
             screen.blit(self.wing_image, self.wing_rect)
+        elif not self.isExploding:
+            self.isExploding = True
+            self.boss.player.addScore(8)
         elif self.isExploding:
-            if self.explosion.currentAnimationFrame < 7:
+            if self.explosion.currentAnimationFrame < 8:
                 screen.blit(self.wing_image, self.wing_rect)
+        else:
+            print("a")
 
 
 class Warning:

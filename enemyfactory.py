@@ -12,26 +12,25 @@ class EnemyFactory:
         self.rowsLeft= 0
         self.player = player
         self.wavesSpawned = 0
-        self.rowsForBoss = 2
+        self.wavesForBoss = 0
 
         self.boss = None
 
         self.difficulty = difficulty
 
-        #Herramienta de debug, no usar esto para juego normal. Debe estar en True si no estás debugeando el boss
-        self.keepSpawning = True
+        #Herramienta de debug, no usar esto para juego normal. NORMAL-TRUE | DEBUG-FALSE
+        self.keepSpawning = False
 
 
     def spawnBoss(self):
         self.boss = Boss(100, -220, 3, 10, 0, self.difficulty, self.player)
 
     def spawnCheck(self, enemyRows):
-
         if self.rowsLeft > 0 and self.keepSpawning:
             self.spawn(enemyRows)
 
     def spawnBossCheck(self, enemyRows):
-        if self.wavesSpawned >= self.rowsForBoss and self.boss == None and len(enemyRows) == 0:
+        if self.wavesSpawned >= self.wavesForBoss and self.boss == None and len(enemyRows) == 0:
             self.rowsLeft = 0
             self.spawnBoss()
 
