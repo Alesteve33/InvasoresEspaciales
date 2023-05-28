@@ -266,7 +266,7 @@ while running:
 
     timer += dt
 
-    if timer >= timeToGoDown and not enemiesAreSpawning and enemyFactory.boss == None:
+    if timer >= timeToGoDown and not enemiesAreSpawning and enemyFactory.boss != None:
         timer = 0
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
@@ -316,7 +316,7 @@ while running:
 
                 enemy_killed_sound.play()
 
-    if not enemyRows and enemyFactory.rowsLeft <= 0 and enemyFactory.wavesSpawned < enemyFactory.wavesForBoss:
+    if not enemyRows and enemyFactory.rowsLeft <= 0:
         enemyFactory.spawnLines(4, 4)
         timer = 0
         enemiesAreSpawning = False

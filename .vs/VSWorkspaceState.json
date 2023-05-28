@@ -1,9 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\sprites",
-    "\\sprites\\boss"
+    "\\sprites"
   ],
-  "SelectedNode": "\\sprites\\boss\\boss3_1.png",
+  "SelectedNode": "\\boss.py",
   "PreviewInSolutionExplorer": false
 }
