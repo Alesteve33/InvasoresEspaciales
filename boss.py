@@ -131,7 +131,7 @@ class Boss:
         y = 70
         width = screen.get_size()[0] / 5
         height = 15
-
+        
         for wing in self.wings:
             if wing.orientation == "left":
                 x = screen.get_size()[0] / 8
@@ -178,15 +178,12 @@ class Boss:
         for wing in self.wings:
 
             wing.tick(dt)
-
             if wing.orientation == "right":
                 wing.wing_rect.x = self.x + 374
                 wing.wing_rect.y = self.y + 100
             else:
                 wing.wing_rect.x = self.x - 63
                 wing.wing_rect.y = self.y + 100
-
-
 
             if wing.isExploding:
                 self.wings.remove(wing)
@@ -387,6 +384,7 @@ class Wing:
 
         if self.isExploding and not self.finishedExplosion:
             self.explosion = self.boss.explosionMaker.makeExplosion(self.x - 145, self.y - 145, 400)
+            print(self.explosion)
             self.finishedExplosion = True
 
 
@@ -399,6 +397,8 @@ class Wing:
         elif self.isExploding:
             if self.explosion.currentAnimationFrame < 8:
                 screen.blit(self.wing_image, self.wing_rect)
+        else:
+            print("a")
 
 
 class Warning:
