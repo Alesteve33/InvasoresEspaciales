@@ -6,12 +6,13 @@ class Menu:
     def __init__(self, screen, sw, sh, font):
         self.isInMenu = True
         self.buttonSelected = 0
-        self.buttonAmount = 4
+        self.buttonAmount = 5
         self.colors = []
 
         self.isInSettings = False
         self.isGameOver = False
         self.isInStats = False
+        self.isInCredits = False
 
         self.difficulty = 0 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
         self.holdShoot = True
@@ -59,18 +60,29 @@ class Menu:
         self.arrow_4_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 220
         self.arrow_4_rect.y = self.sh/4 + 105
 
+        self.credits_image = pygame.image.load("sprites/credits.png")
+        self.credits_rect = self.credits_image.get_rect()
+        self.credits_py = sh + 100
+        self.credits_rect.y = self.credits_py
+        self.creditsSpeed = 75
+        self.creditsSpeedMultiplier = 1
+
         self.logo_image = pygame.image.load("sprites/logo.png")
         self.logo_image = pygame.transform.scale(self.logo_image, (400, 400))
         self.logo_rect = self.logo_image.get_rect()
         self.logo_rect.centerx = screen.get_size()[0]/3 - 30
-        self.logo_rect.centery = screen.get_size()[1]/2
+        self.logo_rect.centery = screen.get_size()[1]/3
+        
+        self.tutorial_image = pygame.transform.scale(pygame.image.load("sprites/tutorial.png"), (367/1.4, 237/1.4))
+        self.tutorial_rect = self.tutorial_image.get_rect()
+        self.tutorial_rect.centerx = screen.get_size()[0]/3 - 30
+        self.tutorial_rect.centery = screen.get_size()[1]/1.3
 
     def handleKey(self, keys, deltaTime, enemyRows, player, bullets, spawner):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN:
-                print(event.key)
                 if (event.key == pygame.K_UP and not self.isGameOver and not self.isInStats):
                     self.buttonSelected -= 1
                     self.menu_select_sound.play()
@@ -78,7 +90,9 @@ class Menu:
                     self.buttonSelected += 1
                     self.menu_select_sound.play()
                 elif (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE) and not self.isGameOver:
-                    self.menu_select_sound.play()
+                    
+                    if not self.isInCredits:
+                        self.menu_select_sound.play()
                     if not self.isInSettings:
                         if self.buttonSelected == 0: #PLAY
                             self.isInMenu = False
@@ -90,6 +104,10 @@ class Menu:
                         elif self.buttonSelected == 2: #STATS
                             self.isInStats = True
                             continue
+                        elif self.buttonSelected == 3: #Credits
+                            self.isInCredits = True
+                            if self.isInCredits:
+                                self.creditsSpeedMultiplier = 5
                         else:
                             pygame.quit()
                             exit()
@@ -100,7 +118,10 @@ class Menu:
                     elif self.isInSettings and self.buttonSelected == 4:
                         self.isInSettings = False
                         self.buttonSelected = 1
-
+                
+                elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
+                    if self.isInCredits:
+                        self.creditsSpeed = 0
                 elif event.key == pygame.K_ESCAPE:
                     if self.isInSettings:
                         self.isInSettings = False
@@ -110,6 +131,12 @@ class Menu:
                         self.isInStats = False
                         self.buttonSelected = 2
                         self.menu_select_sound.play()
+                    if self.isInCredits:
+                        self.isInCredits = False
+                        self.buttonSelected = 3
+                        self.menu_select_sound.play()
+                        self.credits_py = self.sh + 100
+                        self.credits_rect.y = self.credits_py
                 elif event.key == pygame.K_SPACE:
                     if self.isGameOver:
                         enemyRows.clear()
@@ -123,6 +150,14 @@ class Menu:
                         player.tick(deltaTime, bullets)
                         spawner.spawnLines(4, 5)
                         self.isGameOver = False
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                    self.creditsSpeedMultiplier = 1
+                elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
+                    if self.isInCredits:
+                        self.creditsSpeed = 75
+                    
 
 
         return True
@@ -230,6 +265,13 @@ class Menu:
 
             return
 
+        if self.isInCredits:
+            self.credits_py -= self.creditsSpeed * self.creditsSpeedMultiplier * dt
+            self.credits_rect.y = self.credits_py
+            screen.blit(self.credits_image, self.credits_rect)
+
+            return
+
         if self.isGameOver:
             self.skull_rect.x = screen.get_size()[0]/2 - 66
             self.skull_rect.y = screen.get_size()[1]/2 - 50
@@ -262,13 +304,16 @@ class Menu:
         playText = font.render("Play", False, self.colors[0])
         settingsText = font.render("Settings", False, self.colors[1])
         statsText = font.render("Statistics", False, self.colors[2])
-        exitText = font.render("Exit", False, self.colors[3])
+        creditsText = font.render("Credits", False, self.colors[3])
+        exitText = font.render("Exit", False, self.colors[4])
 
         #titleText = self.titleFont.render("Ship Killer", False, (200, 155, 45))
 
         #screen.blit(titleText, (screen.get_size()[0]/2 - self.titleFont.size("Ship Killer")[0]/2, screen.get_size()[1]/4 - 80))
         screen.blit(self.logo_image, self.logo_rect)
-        screen.blit(playText, (screen.get_size()[0]/1.35 - font.size("Play")[0]/2, screen.get_size()[1]/2 - 150 - font.size("Play")[1]/2))
-        screen.blit(settingsText, (screen.get_size()[0]/1.35 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 50 - font.size("Settings")[1]/2))
-        screen.blit(statsText, (screen.get_size()[0]/1.35 - font.size("Statistics")[0]/2, screen.get_size()[1]/2 + 50 - font.size("Statistics")[1]/2))
-        screen.blit(exitText, (screen.get_size()[0]/1.35 - font.size("Exit")[0]/2, screen.get_size()[1]/2 + 150 - font.size("Exit")[1]/2))
+        screen.blit(self.tutorial_image, self.tutorial_rect)
+        screen.blit(playText, (screen.get_size()[0]/1.35 - font.size("Play")[0]/2, screen.get_size()[1]/2 - 200 - font.size("Play")[1]/2))
+        screen.blit(settingsText, (screen.get_size()[0]/1.35 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 100 - font.size("Settings")[1]/2))
+        screen.blit(statsText, (screen.get_size()[0]/1.35 - font.size("Statistics")[0]/2, screen.get_size()[1]/2  - font.size("Statistics")[1]/2))
+        screen.blit(creditsText, (screen.get_size()[0]/1.35 - font.size("Credits")[0]/2, screen.get_size()[1]/2 + 100 - font.size("Credits")[1]/2))
+        screen.blit(exitText, (screen.get_size()[0]/1.35 - font.size("Exit")[0]/2, screen.get_size()[1]/2 + 200 - font.size("Exit")[1]/2))

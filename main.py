@@ -91,7 +91,6 @@ while running:
     player.health_sound.set_volume(menu.volume * 0.01)
     player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
     player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
-    pygame.mixer.music.set_volume(0)
 
     if menu.musicOn:
         pygame.mixer.music.set_volume(menu.volume * 0.003)
@@ -173,6 +172,7 @@ while running:
         dt = clock.tick(FPS) / 1000
 
         keys = False
+        pygame.event.clear()
 
         continue
 
@@ -339,7 +339,7 @@ while running:
         enemyFactory.boss.tick(dt, player, bullets)
         enemyFactory.boss.render(screen)
 
-        if enemyFactory.boss.finishedExplosion:
+        if enemyFactory.boss.isDead:
             enemyFactory.boss = None
             enemyFactory.wavesSpawned = 0
     if not enemyRows and enemyFactory.rowsLeft > 0:

@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import threading
 from bullet import Bullet
 from stats import Stats
 from explosions import Explosions
@@ -37,9 +38,10 @@ class Boss:
         self.explosionStep = 0.1
         self.explosionTimer = 0
         self.explosionCount = 0
-        self.hideAfterExplosionCount = 95
-        self.explosionsToDo = 100
-        self.waitAfterFinalExplosion = 3
+        self.explosionsToDo = 50
+        self.finalExplosions = []
+        #self.finalExplosionsThreads = []
+        self.isDead = False  # After explosions finished = True
 
         self.leftLaserEnabled = False
         self.rightLaserEnabled = False
@@ -206,12 +208,19 @@ class Boss:
                     self.explosionMaker.makeExplosion(self.x + random.randint(-160, 270),
                         self.y + random.randint(-50, 0),
                         random.randint(200, 300))
-
-            if self.explosionCount >= self.hideAfterExplosionCount:
-                self.isVisible = False
-
-            if self.explosionsToDo <= self.explosionCount and self.explosionTimer > self.waitAfterFinalExplosion:
-                self.finishedExplosion = True
+                elif not self.finishedExplosion and self.explosionTimer > 0.5:
+                    self.finishedExplosion = True
+                    for y in range(4):
+                        for x in range(10):
+                            thread = threading.Thread(target = self.finalExplosions.append(self.explosionMaker.makeExplosion(self.boss_rect.topright[0] - 120 - x*50, self.boss_rect.topleft[1] - y*40, random.randint(250, 350))))
+                            thread.start()
+            if not not self.finalExplosions:
+                if self.explosionsToDo <= self.explosionCount and self.finalExplosions[0].currentAnimationFrame >= 8:
+                    if self.isVisible:
+                        self.explosionTimer = 0
+                        self.isVisible = False
+                    if self.explosionTimer > 2:
+                        self.isDead = True
 
             self.explosionMaker.tick(dt)
             return
