@@ -56,8 +56,6 @@ enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
 enemyFactory.spawnLines(4, 6)
 enemyFactory.spawnCheck(enemyRows)
 
-
-
 pygame.mixer.music.load("sounds/music/menu1.mp3")
 pygame.mixer.music.play(5)
 shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
@@ -106,7 +104,7 @@ while running:
     if menu.isInMenu:
         if not menu.isGameOver:
             player.score = 0
-
+      
         menu.render(screen, font, player.score, dt, stats)
         handleKeys = menu.handleKey(keys, dt, enemyRows, player, bullets, enemyFactory)
         if not handleKeys:

@@ -59,12 +59,18 @@ class Menu:
         self.arrow_4_rect.x = self.sw/2 - font.size("Volume: " + str(self.volume) + "%")[0]/2 + 220
         self.arrow_4_rect.y = self.sh/4 + 105
 
+        self.logo_image = pygame.image.load("sprites/logo.png")
+        self.logo_image = pygame.transform.scale(self.logo_image, (400, 400))
+        self.logo_rect = self.logo_image.get_rect()
+        self.logo_rect.centerx = screen.get_size()[0]/3 - 30
+        self.logo_rect.centery = screen.get_size()[1]/2
 
     def handleKey(self, keys, deltaTime, enemyRows, player, bullets, spawner):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN:
+                print(event.key)
                 if (event.key == pygame.K_UP and not self.isGameOver and not self.isInStats):
                     self.buttonSelected -= 1
                     self.menu_select_sound.play()
@@ -253,12 +259,6 @@ class Menu:
         #creditText = font.render("by Daniel Villena and Alejandro Vila", False, (200, 200, 200))
         #screen.blit(creditText, (screen.get_size()[0]/2 - font.size("by Daniel Villena and Alejandro Vila")[0]/2, screen.get_size()[1]/2 - 170))
 
-        logo_image = pygame.image.load("sprites/logo.png")
-        logo_image = pygame.transform.scale(logo_image, (400, 400))
-        logo_rect = logo_image.get_rect()
-        logo_rect.centerx = screen.get_size()[0]/3 - 30
-        logo_rect.centery = screen.get_size()[1]/2
-
         playText = font.render("Play", False, self.colors[0])
         settingsText = font.render("Settings", False, self.colors[1])
         statsText = font.render("Statistics", False, self.colors[2])
@@ -267,7 +267,7 @@ class Menu:
         #titleText = self.titleFont.render("Ship Killer", False, (200, 155, 45))
 
         #screen.blit(titleText, (screen.get_size()[0]/2 - self.titleFont.size("Ship Killer")[0]/2, screen.get_size()[1]/4 - 80))
-        screen.blit(logo_image, logo_rect)
+        screen.blit(self.logo_image, self.logo_rect)
         screen.blit(playText, (screen.get_size()[0]/1.35 - font.size("Play")[0]/2, screen.get_size()[1]/2 - 150 - font.size("Play")[1]/2))
         screen.blit(settingsText, (screen.get_size()[0]/1.35 - font.size("Settings")[0]/2, screen.get_size()[1]/2 - 50 - font.size("Settings")[1]/2))
         screen.blit(statsText, (screen.get_size()[0]/1.35 - font.size("Statistics")[0]/2, screen.get_size()[1]/2 + 50 - font.size("Statistics")[1]/2))

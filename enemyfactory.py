@@ -26,7 +26,6 @@ class EnemyFactory:
         self.boss = Boss(100, -220, 3, 10, 0, self.difficulty, self.player)
 
     def spawnCheck(self, enemyRows):
-        print(self.wavesSpawned)
         if self.rowsLeft > 0 and self.keepSpawning:
             self.spawn(enemyRows)
 

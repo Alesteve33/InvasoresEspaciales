@@ -22,6 +22,8 @@ class Shield:
 
         self.isEnabled = False
 
+        self.indicator = Indicator(self.cooldown)
+
         self.enableShieldSound = pygame.mixer.Sound("sounds/shield_enabled.mp3")
         self.disableShieldSound = pygame.mixer.Sound("sounds/shield_disabled.mp3")
 
@@ -46,11 +48,14 @@ class Shield:
         if self.animation_timer > self.shieldMaxTime and self.isEnabled:
             self.disableShield()
 
+        self.indicator.tick(dt)
+
 
     def render(self, screen):
         if self.isEnabled:
             screen.blit(self.shield_image, self.shield_rect)
-
+            self.indicator.render(screen)
+            
     def disableShield(self):
         self.disableShieldSound.play()
         self.isEnabled = False
@@ -68,3 +73,21 @@ class Shield:
             self.animationSpeed += dt
             self.actualAlpha = 100 * math.cos(self.opacityTimer*self.animationSpeed) + 155
             self.shield_image.set_alpha(self.actualAlpha)
+
+
+class Indicator:
+    def __init__(self, cooldown):
+        self.angle = 0
+        self.timer = 0
+        self.cooldown = cooldown
+        self.x = 100
+        self.y = 100
+        self.radius = 20
+    
+    def tick(self, dt):
+        self.angle += dt
+        
+    def render(self, screen):
+        pygame.draw.polygon(screen, (255, 255, 255), ((self.x, self.y),
+                                                      (math.cos(self.angle), math.sin(self.angle)),
+                                                      (math.cos(self.angle) * self.x, math.sin(self.angle))))
