@@ -19,7 +19,7 @@ class EnemyFactory:
         self.difficulty = difficulty
 
         #Herramienta de debug, no usar esto para juego normal. NORMAL-TRUE | DEBUG-FALSE
-        self.keepSpawning = True
+        self.keepSpawning = False
 
 
     def spawnBoss(self):

@@ -69,28 +69,32 @@ class Boss:
         self.warnings = []
         self.right_warning_enabled = False
         self.left_warning_enabled = False
-            
+
         self.maxHealth = -694201337
         if difficulty == 0: #Easy
             self.maxHealth = 15
             self.randomShootChance = 5
             self.warning_max_time = 3.5
             self.maxLaserTime = 2
+            self.shoot_cooldown = 1
         elif difficulty == 1: #Normal
             self.maxHealth = 20
             self.randomShootChance = 10
             self.warning_max_time = 2.5
             self.maxLaserTime = 3
+            self.shoot_cooldown = 0.75
         elif difficulty == 2: #Hard
             self.maxHealth = 30
             self.randomShootChance = 20
             self.warning_max_time = 1.5
             self.maxLaserTime = 4
+            self.shoot_cooldown = 0.5
         elif difficulty == 3: #Expert
             self.maxHealth = 40
             self.randomShootChance = 30
             self.warning_max_time = 1
             self.maxLaserTime = 5
+            self.shoot_cooldown = 0.25
 
         self.health = self.maxHealth
 
@@ -134,7 +138,7 @@ class Boss:
         y = 70
         width = screen.get_size()[0] / 5
         height = 15
-        
+
         for wing in self.wings:
             if wing.orientation == "left":
                 x = screen.get_size()[0] / 8

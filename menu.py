@@ -1,5 +1,7 @@
 import pygame
 from player import Player
+from time import gmtime
+from time import strftime
 
 class Menu:
 
@@ -14,7 +16,7 @@ class Menu:
         self.isInStats = False
         self.isInCredits = False
 
-        self.difficulty = 0 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
+        self.difficulty = 1 #0 for easy, 1 for normal, 2 for hard, 3 for extreme
         self.holdShoot = True
         self.volume = 50
         self.musicOn = True
@@ -72,7 +74,7 @@ class Menu:
         self.logo_rect = self.logo_image.get_rect()
         self.logo_rect.centerx = screen.get_size()[0]/3 - 30
         self.logo_rect.centery = screen.get_size()[1]/3
-        
+
         self.tutorial_image = pygame.transform.scale(pygame.image.load("sprites/tutorial.png"), (367/1.4, 237/1.4))
         self.tutorial_rect = self.tutorial_image.get_rect()
         self.tutorial_rect.centerx = screen.get_size()[0]/3 - 30
@@ -90,7 +92,7 @@ class Menu:
                     self.buttonSelected += 1
                     self.menu_select_sound.play()
                 elif (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE) and not self.isGameOver:
-                    
+
                     if not self.isInCredits:
                         self.menu_select_sound.play()
                     if not self.isInSettings:
@@ -118,7 +120,7 @@ class Menu:
                     elif self.isInSettings and self.buttonSelected == 4:
                         self.isInSettings = False
                         self.buttonSelected = 1
-                
+
                 elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                     if self.isInCredits:
                         self.creditsSpeed = 0
@@ -157,12 +159,12 @@ class Menu:
                 elif event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                     if self.isInCredits:
                         self.creditsSpeed = 75
-                    
+
 
 
         return True
 
-    def render(self, screen, font, score, dt, stats):
+    def render(self, screen, font, score, timeAlive, dt, stats):
         keys = pygame.key.get_pressed()
         self.volumeTimer += dt
 
@@ -195,14 +197,10 @@ class Menu:
                     self.menu_select_sound.play()
                     self.volume += 1
 
-        #Deberíamos rehacer este fix pero no se me ocurre nada mejor
-        fix = 0
-        if self.isInSettings:
-            fix = 1
-        if self.buttonSelected >= self.buttonAmount + fix:
+        if self.buttonSelected >= self.buttonAmount:
             self.buttonSelected = 0
         elif self.buttonSelected < 0:
-            self.buttonSelected = self.buttonAmount - 1 + fix
+            self.buttonSelected = self.buttonAmount - 1
 
 
         screen.fill((0,0,0))
@@ -283,8 +281,12 @@ class Menu:
             scoreText = font.render("Score: " + str(score), False, (255, 255, 255))
             screen.blit(scoreText, (screen.get_size()[0]/2 - font.size("Score: " + str(score))[0]/2, screen.get_size()[1]/2 - 100))
 
-            pressSpaceText = font.render("Press Space to continue", False, (255, 255, 255))
-            screen.blit(pressSpaceText, (screen.get_size()[0]/2 - font.size("Press Space to continue")[0]/2, screen.get_size()[1]/2 + 80))
+            time = strftime("%M:%S", gmtime(timeAlive))
+            scoreText = font.render("Time survived: " + time, False, (255, 255, 255))
+            screen.blit(scoreText, (screen.get_size()[0]/2 - font.size("Time survived: " + time)[0]/2, screen.get_size()[1]/2 + 80))
+
+            pressSpaceText = font.render("Press 'Space' to continue", False, (255, 255, 255))
+            screen.blit(pressSpaceText, (screen.get_size()[0]/2 - font.size("Press 'Space' to continue")[0]/2, screen.get_size()[1]/2 + 120))
             return
 
         colorNotSelected = (255, 255, 255)
@@ -297,7 +299,7 @@ class Menu:
 
         if self.isInSettings:
             return
-        
+
         #creditText = font.render("by Daniel Villena and Alejandro Vila", False, (200, 200, 200))
         #screen.blit(creditText, (screen.get_size()[0]/2 - font.size("by Daniel Villena and Alejandro Vila")[0]/2, screen.get_size()[1]/2 - 170))
 
