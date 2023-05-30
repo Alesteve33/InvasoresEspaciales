@@ -98,6 +98,10 @@ class Boss:
 
         self.health = self.maxHealth
 
+        self.shield_image = pygame.image.load("sprites/boss/shield.png")
+        self.shield_rect = self.shield_image.get_rect()
+        self.shield_rect.center = self.boss_rect.center #CONTINUE IN CLASS
+
         self.wings = [] # 1 RIGHT | 2 LEFT
         self.wings.append(Wing(self.health / 3, "right", self.x, self.y, self))
         self.wings.append(Wing(self.health / 3, "left", self.x, self.y, self))
@@ -262,8 +266,9 @@ class Boss:
 
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
-                if bullet.bullet_rect.colliderect(self.boss_rect) and not self.wings:
-                    self.health -= bullet.damage
+                if bullet.bullet_rect.colliderect(self.boss_rect):
+                    if not self.wings:
+                        self.health -= bullet.damage
                     bullets.remove(bullet)
                 elif self.wings != None:
                     for wing in self.wings:
