@@ -187,6 +187,8 @@ class Boss:
         self.right_laser_rect.x = self.x + 279
         self.right_laser_rect.y = self.y + 120
 
+        self.shield_rect.center = (self.boss_rect.center[0], self.boss_rect.center[1] + 25)
+
         for wing in self.wings:
 
             if wing.orientation == "right":
@@ -359,6 +361,8 @@ class Boss:
             self.drawBossBar(screen)
 
         if self.isVisible:
+            if not not self.wings: 
+                screen.blit(self.shield_image, self.shield_rect)
             if self.leftLaserEnabled:
                 screen.blit(self.laser_image, self.left_laser_rect)
             if self.rightLaserEnabled:
@@ -367,6 +371,7 @@ class Boss:
             if self.warnings is not None:
                 for warning in self.warnings:
                     warning.render(screen)
+                    
             screen.blit(self.boss_image, self.boss_rect)
 
             for wing in self.wings:
