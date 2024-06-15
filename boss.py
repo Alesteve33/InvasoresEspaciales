@@ -1,7 +1,6 @@
 import pygame
 import random
 import math
-import threading
 from bullet import Bullet
 from stats import Stats
 from explosions import Explosions
@@ -38,10 +37,9 @@ class Boss:
         self.explosionStep = 0.1
         self.explosionTimer = 0
         self.explosionCount = 0
-        self.explosionsToDo = 50
-        self.finalExplosions = []
-        #self.finalExplosionsThreads = []
-        self.isDead = False  # After explosions finished = True
+        self.hideAfterExplosionCount = 95
+        self.explosionsToDo = 100
+        self.waitAfterFinalExplosion = 3
 
         self.leftLaserEnabled = False
         self.rightLaserEnabled = False
@@ -69,38 +67,30 @@ class Boss:
         self.warnings = []
         self.right_warning_enabled = False
         self.left_warning_enabled = False
-
+            
         self.maxHealth = -694201337
         if difficulty == 0: #Easy
             self.maxHealth = 15
             self.randomShootChance = 5
             self.warning_max_time = 3.5
             self.maxLaserTime = 2
-            self.shoot_cooldown = 1
         elif difficulty == 1: #Normal
             self.maxHealth = 20
             self.randomShootChance = 10
             self.warning_max_time = 2.5
             self.maxLaserTime = 3
-            self.shoot_cooldown = 0.75
         elif difficulty == 2: #Hard
             self.maxHealth = 30
             self.randomShootChance = 20
             self.warning_max_time = 1.5
             self.maxLaserTime = 4
-            self.shoot_cooldown = 0.5
         elif difficulty == 3: #Expert
             self.maxHealth = 40
             self.randomShootChance = 30
             self.warning_max_time = 1
             self.maxLaserTime = 5
-            self.shoot_cooldown = 0.25
 
         self.health = self.maxHealth
-
-        self.shield_image = pygame.image.load("sprites/boss/shield.png")
-        self.shield_rect = self.shield_image.get_rect()
-        self.shield_rect.center = self.boss_rect.center #CONTINUE IN CLASS
 
         self.wings = [] # 1 RIGHT | 2 LEFT
         self.wings.append(Wing(self.health / 3, "right", self.x, self.y, self))
@@ -142,7 +132,7 @@ class Boss:
         y = 70
         width = screen.get_size()[0] / 5
         height = 15
-
+        
         for wing in self.wings:
             if wing.orientation == "left":
                 x = screen.get_size()[0] / 8
@@ -187,8 +177,6 @@ class Boss:
         self.right_laser_rect.x = self.x + 279
         self.right_laser_rect.y = self.y + 120
 
-        self.shield_rect.center = (self.boss_rect.center[0], self.boss_rect.center[1] + 25)
-
         for wing in self.wings:
 
             if wing.orientation == "right":
@@ -218,19 +206,12 @@ class Boss:
                     self.explosionMaker.makeExplosion(self.x + random.randint(-160, 270),
                         self.y + random.randint(-50, 0),
                         random.randint(200, 300))
-                elif not self.finishedExplosion and self.explosionTimer > 0.5:
-                    self.finishedExplosion = True
-                    for y in range(4):
-                        for x in range(10):
-                            thread = threading.Thread(target = self.finalExplosions.append(self.explosionMaker.makeExplosion(self.boss_rect.topright[0] - 120 - x*50, self.boss_rect.topleft[1] - y*40, random.randint(250, 350))))
-                            thread.start()
-            if not not self.finalExplosions:
-                if self.explosionsToDo <= self.explosionCount and self.finalExplosions[0].currentAnimationFrame >= 8:
-                    if self.isVisible:
-                        self.explosionTimer = 0
-                        self.isVisible = False
-                    if self.explosionTimer > 2:
-                        self.isDead = True
+
+            if self.explosionCount >= self.hideAfterExplosionCount:
+                self.isVisible = False
+
+            if self.explosionsToDo <= self.explosionCount and self.explosionTimer > self.waitAfterFinalExplosion:
+                self.finishedExplosion = True
 
             self.explosionMaker.tick(dt)
             return
@@ -268,9 +249,8 @@ class Boss:
 
         for bullet in bullets:
             if bullet.isEnemyBullet is not True:
-                if bullet.bullet_rect.colliderect(self.boss_rect):
-                    if not self.wings:
-                        self.health -= bullet.damage
+                if bullet.bullet_rect.colliderect(self.boss_rect) and not self.wings:
+                    self.health -= bullet.damage
                     bullets.remove(bullet)
                 elif self.wings != None:
                     for wing in self.wings:
@@ -361,8 +341,6 @@ class Boss:
             self.drawBossBar(screen)
 
         if self.isVisible:
-            if not not self.wings: 
-                screen.blit(self.shield_image, self.shield_rect)
             if self.leftLaserEnabled:
                 screen.blit(self.laser_image, self.left_laser_rect)
             if self.rightLaserEnabled:
@@ -371,7 +349,6 @@ class Boss:
             if self.warnings is not None:
                 for warning in self.warnings:
                     warning.render(screen)
-                    
             screen.blit(self.boss_image, self.boss_rect)
 
             for wing in self.wings:

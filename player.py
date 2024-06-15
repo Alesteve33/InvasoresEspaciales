@@ -12,7 +12,7 @@ class Player:
         self.health = health
 
         self.shield = Shield()
-
+        
         self.menu = menu
         self.stats = stats
         self.shoot_cooldown = 0.4
@@ -20,7 +20,7 @@ class Player:
 
         self.isExploding = False
         self.finishedExplosion = False
-
+        
         self.animationTimer = 0
         self.animationFrameTime = 0.15
         self.waitTimeAfterFinishedExplosion = 2
@@ -33,8 +33,6 @@ class Player:
         self.player_rect.x = self.x
         self.player_rect.y = self.y
         self.score = 0
-
-        self.timeAlive = 0
 
         self.health_sound = pygame.mixer.Sound("sounds/health.mp3")
     def render(self, screen, dt):
@@ -62,8 +60,6 @@ class Player:
     def tick(self, deltaTime, bullets):
         self.shield.tick(deltaTime, self.x, self.y, self.size[0])
         self.shield.animate(deltaTime)
-
-        self.timeAlive += deltaTime
 
         self.time_since_last_shot += deltaTime
         self.player_rect.x = self.x
@@ -104,7 +100,7 @@ class Player:
             self.x -= self.speed * deltaTime
         if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.x < 768 - self.size[0]:
             self.x += self.speed * deltaTime
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.shield.enableShield()
 
     def shoot(self):
