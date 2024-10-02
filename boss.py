@@ -7,7 +7,7 @@ from stats import Stats
 from explosions import Explosions
 
 class Boss:
-    def __init__(self, x, y, boss_type, speed, direction, difficulty, player):
+    def __init__(self, x, y, boss_type, speed, direction, difficulty, player, explosion_sound):
         self.x = x
         self.y = y
         self.boss_type = boss_type
@@ -32,13 +32,14 @@ class Boss:
         self.spawnAnimationSpeed = 130
         self.distanceToPlayerToEndSpawnAnimation = 449
 
-        self.explosionMaker = Explosions()
+        self.explosionMaker = Explosions(explosion_sound)
         self.isExploding = False
         self.finishedExplosion = False
         self.explosionStep = 0.1
         self.explosionTimer = 0
         self.explosionCount = 0
         self.explosionsToDo = 50
+        self.explosion_sound = explosion_sound
         self.finalExplosions = []
         #self.finalExplosionsThreads = []
         self.isDead = False  # After explosions finished = True
@@ -98,13 +99,15 @@ class Boss:
 
         self.health = self.maxHealth
 
-        self.shield_image = pygame.image.load("sprites/boss/shield.png")
+        self.shield_image = pygame.transform.scale(pygame.image.load("sprites/boss/shield.png"), (14*3, 80*4.5))
+        self.shield_image = pygame.transform.rotate(self.shield_image, 90)
+        self.shield_image.set_alpha(128)
         self.shield_rect = self.shield_image.get_rect()
         self.shield_rect.center = self.boss_rect.center #CONTINUE IN CLASS
 
         self.wings = [] # 1 RIGHT | 2 LEFT
-        self.wings.append(Wing(self.health / 3, "right", self.x, self.y, self))
-        self.wings.append(Wing(self.health / 3, "left", self.x, self.y, self))
+        self.wings.append(Wing(self.health / 3, "right", self.x, self.y, self, self.explosion_sound))
+        self.wings.append(Wing(self.health / 3, "left", self.x, self.y, self, self.explosion_sound))
 
         pygame.Rect(self.boss_rect)
 
@@ -187,7 +190,7 @@ class Boss:
         self.right_laser_rect.x = self.x + 279
         self.right_laser_rect.y = self.y + 120
 
-        self.shield_rect.center = (self.boss_rect.center[0], self.boss_rect.center[1] + 25)
+        self.shield_rect.center = (self.boss_rect.center[0], self.boss_rect.center[1] + 75)
 
         for wing in self.wings:
 
@@ -220,6 +223,7 @@ class Boss:
                         random.randint(200, 300))
                 elif not self.finishedExplosion and self.explosionTimer > 0.5:
                     self.finishedExplosion = True
+                    self.explosion_sound.play()
                     for y in range(4):
                         for x in range(10):
                             thread = threading.Thread(target = self.finalExplosions.append(self.explosionMaker.makeExplosion(self.boss_rect.topright[0] - 120 - x*50, self.boss_rect.topleft[1] - y*40, random.randint(250, 350))))
@@ -361,8 +365,8 @@ class Boss:
             self.drawBossBar(screen)
 
         if self.isVisible:
-            if not not self.wings: 
-                screen.blit(self.shield_image, self.shield_rect)
+            
+            screen.blit(self.boss_image, self.boss_rect)
             if self.leftLaserEnabled:
                 screen.blit(self.laser_image, self.left_laser_rect)
             if self.rightLaserEnabled:
@@ -372,16 +376,19 @@ class Boss:
                 for warning in self.warnings:
                     warning.render(screen)
                     
-            screen.blit(self.boss_image, self.boss_rect)
+            
 
             for wing in self.wings:
                 wing.render(screen)
 
+            if len(self.wings) > 0:
+                screen.blit(self.shield_image, self.shield_rect)
+    
         self.explosionMaker.render(screen)
 
 
 class Wing:
-    def __init__(self, health, orientation, x, y, boss):
+    def __init__(self, health, orientation, x, y, boss, explosion_sound):
         self.maxHealth = health
         self.health = self.maxHealth
         self.orientation = orientation
@@ -390,7 +397,7 @@ class Wing:
         self.finishedExplosion = False
         self.wing_image = pygame.image.load("sprites/boss/" + orientation + ".png")
         self.wing_image = pygame.transform.scale(self.wing_image, tuple(x/5 for x in self.wing_image.get_size()))
-
+        self.explosion_sound = explosion_sound
         self.x = x
         self.y = y
 

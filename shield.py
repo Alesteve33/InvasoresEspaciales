@@ -97,10 +97,10 @@ class Indicator:
         else:
             self.shield_ind_image = pygame.transform.scale(pygame.image.load("sprites/shield.png"), (self.radius, self.radius))
             self.shield_ind_image.fill((255, 0, 0), special_flags=pygame.BLEND_ADD)
-
+        
     def render(self, screen):
         progress = self.timer/self.cooldown
         angle = 2 * math.pi * progress
 
-        pygame.draw.arc(screen, (0, 153, 51), self.arc_rect, 0, angle, self.radius)
+        pygame.draw.arc(screen, (0, 153, 51), self.arc_rect, 0, angle, 5)
         screen.blit(self.shield_ind_image, self.shield_ind_rect)

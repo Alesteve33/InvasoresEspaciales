@@ -1,8 +1,9 @@
 import pygame
 
 class Explosions():
-    def __init__(self):
+    def __init__(self, explosion_sound):
         self.explosions = []
+        self.explosion_sound = explosion_sound
 
     def tick(self, dt):
         for explosion in self.explosions:
@@ -14,6 +15,8 @@ class Explosions():
 
     def makeExplosion(self, x, y, size):
         explosion = Explosion(x, y, size)
+        self.explosion_sound.play()
+        print("hola")
         self.explosions.append(explosion)
         return explosion
         

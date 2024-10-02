@@ -53,9 +53,6 @@ fade = Fade()
 stats = Stats(menu)
 player = Player(WIDTH/2-80, 585, 250.0, 4, menu, stats)
 
-enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
-enemyFactory.spawnLines(4, 6)
-enemyFactory.spawnCheck(enemyRows)
 
 pygame.mixer.music.load("sounds/music/menu1.mp3")
 pygame.mixer.music.play(5)
@@ -63,35 +60,24 @@ shoot_sound = pygame.mixer.Sound("sounds/shoot.mp3")
 explosion_sound = pygame.mixer.Sound("sounds/explosion.wav")
 enemy_killed_sound = pygame.mixer.Sound("sounds/enemyKilled.mp3")
 
+enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player, explosion_sound)
+enemyFactory.spawnLines(4, 6)
+enemyFactory.spawnCheck(enemyRows)
+
 running = True
 while running:
     enemyFactory.updateDifficulty(menu.difficulty)
 
-    if menu.difficulty == 0:
-        player.shield.shieldMaxTime = 7.5
-        player.shield.cooldown = 4.5
-        bulletRand = 98
-    elif menu.difficulty == 1:
-        player.shield.shieldMaxTime = 6
-        player.shield.cooldown = 5
-        bulletRand = 96
-    elif menu.difficulty == 2:
-        player.shield.shieldMaxTime = 5
-        player.shield.cooldown = 8
-        bulletRand = 90
-    elif menu.difficulty == 3:
-        player.shield.shieldMaxTime = 4
-        player.shield.cooldown = 10
-        bulletRand = 80
+    
 
-    shoot_sound.set_volume(menu.volume * 0.01)
-    explosion_sound.set_volume(menu.volume * 0.01)
-    enemy_killed_sound.set_volume(menu.volume * 0.01)
+    shoot_sound.set_volume(menu.volume * 0.003)
+    explosion_sound.set_volume(menu.volume * 0.002)
+    enemy_killed_sound.set_volume(menu.volume * 0.001)
     menu.menu_select_sound.set_volume(menu.volume * 0.01)
-    menu.game_over_sound.set_volume(menu.volume * 0.01)
-    player.health_sound.set_volume(menu.volume * 0.01)
-    player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
-    player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
+    menu.game_over_sound.set_volume(menu.volume * 0.002)
+    player.health_sound.set_volume(menu.volume * 0.003)
+    player.shield.enableShieldSound.set_volume(menu.volume * 0.003)
+    player.shield.disableShieldSound.set_volume(menu.volume * 0.003)
 
     if menu.musicOn:
         pygame.mixer.music.set_volume(menu.volume * 0.003)
@@ -104,6 +90,28 @@ while running:
     keys = pygame.key.get_pressed()
 
     if menu.isInMenu:
+        
+        if menu.difficulty == 0:
+            player.shield.shieldMaxTime = 7.5
+            player.shield.cooldown = 4.5
+            player.shoot_cooldown = 0.35
+            bulletRand = 98
+        elif menu.difficulty == 1:
+            player.shield.shieldMaxTime = 6
+            player.shield.cooldown = 5
+            player.shoot_cooldown = 0.375
+            bulletRand = 96
+        elif menu.difficulty == 2:
+            player.shield.shieldMaxTime = 5
+            player.shield.cooldown = 8
+            player.shoot_cooldown = 0.4
+            bulletRand = 90
+        elif menu.difficulty == 3:
+            player.shield.shieldMaxTime = 4
+            player.shield.cooldown = 10
+            player.shoot_cooldown = 0.45
+            bulletRand = 80
+
         if not menu.isGameOver:
             player.score = 0
             player.timeAlive = 0
@@ -196,7 +204,7 @@ while running:
 
             menu.game_over_sound.play()
 
-            enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player)
+            enemyFactory = EnemyFactory(random.randint(2, 5), menu.difficulty, player, explosion_sound)
             enemyFactory.spawnLines(4, 4)
             enemyFactory.spawnCheck(enemyRows)
 
@@ -273,7 +281,6 @@ while running:
     player.render(screen, dt)
 
     player.shield.indicator.render(screen)
-
     timer += dt
 
     if timer >= timeToGoDown and not enemiesAreSpawning and enemyFactory.boss == None:
