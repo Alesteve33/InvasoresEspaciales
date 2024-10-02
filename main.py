@@ -19,6 +19,7 @@ pygame.mixer.init()
 size = WIDTH, HEIGHT = 768, 672
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Ship Killer")
+pygame.display.set_icon(pygame.transform.scale(pygame.image.load("sprites/logo.png"), (32, 32)))
 
 FPS = 60
 clock = pygame.time.Clock()
@@ -91,10 +92,11 @@ while running:
     player.health_sound.set_volume(menu.volume * 0.01)
     player.shield.enableShieldSound.set_volume(menu.volume * 0.01)
     player.shield.disableShieldSound.set_volume(menu.volume * 0.01)
-    pygame.mixer.music.set_volume(0)
 
     if menu.musicOn:
         pygame.mixer.music.set_volume(menu.volume * 0.003)
+    else:
+        pygame.mixer.music.set_volume(0)
 
     if not menu.isInMenu:
         fade.tick()
@@ -104,8 +106,9 @@ while running:
     if menu.isInMenu:
         if not menu.isGameOver:
             player.score = 0
-      
-        menu.render(screen, font, player.score, dt, stats)
+            player.timeAlive = 0
+
+        menu.render(screen, font, player.score, player.timeAlive, dt, stats)
         handleKeys = menu.handleKey(keys, dt, enemyRows, player, bullets, enemyFactory)
         if not handleKeys:
             running = False
@@ -125,6 +128,8 @@ while running:
 
         background.render(screen, dt, WIDTH, HEIGHT)
         player.render(screen, dt)
+
+        player.shield.indicator.render(screen)
 
         for enemyRow in enemyRows:
             for enemy in enemyRow.enemies:
@@ -173,6 +178,7 @@ while running:
         dt = clock.tick(FPS) / 1000
 
         keys = False
+        pygame.event.clear()
 
         continue
 
@@ -220,6 +226,8 @@ while running:
                 enemy.render(screen)
         player.render(screen, dt)
 
+        player.shield.indicator.render(screen)
+
         if not enemyFactory.boss == None:
             enemyFactory.boss.tick(dt, player, bullets)
             enemyFactory.boss.render(screen)
@@ -263,6 +271,8 @@ while running:
         explosion_sound.play()
 
     player.render(screen, dt)
+
+    player.shield.indicator.render(screen)
 
     timer += dt
 
@@ -339,7 +349,7 @@ while running:
         enemyFactory.boss.tick(dt, player, bullets)
         enemyFactory.boss.render(screen)
 
-        if enemyFactory.boss.finishedExplosion:
+        if enemyFactory.boss.isDead:
             enemyFactory.boss = None
             enemyFactory.wavesSpawned = 0
     if not enemyRows and enemyFactory.rowsLeft > 0:

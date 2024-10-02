@@ -48,14 +48,13 @@ class Shield:
         if self.animation_timer > self.shieldMaxTime and self.isEnabled:
             self.disableShield()
 
-        self.indicator.tick(dt)
+        self.indicator.tick(self.cooldown_timer)
 
 
     def render(self, screen):
         if self.isEnabled:
             screen.blit(self.shield_image, self.shield_rect)
-            self.indicator.render(screen)
-            
+
     def disableShield(self):
         self.disableShieldSound.play()
         self.isEnabled = False
@@ -77,17 +76,31 @@ class Shield:
 
 class Indicator:
     def __init__(self, cooldown):
-        self.angle = 0
-        self.timer = 0
+        self.timer = 1000.0
         self.cooldown = cooldown
-        self.x = 100
-        self.y = 100
-        self.radius = 20
-    
-    def tick(self, dt):
-        self.angle += dt
-        
+        self.x = 10
+        self.y = 40
+        self.radius = 40
+
+        self.shield_ind_image = pygame.transform.scale(pygame.image.load("sprites/shield.png"), (self.radius, self.radius))
+        self.shield_ind_rect = self.shield_ind_image.get_rect()
+        self.shield_ind_rect.x = 30
+        self.shield_ind_rect.y = 60 #130
+
+        self.arc_rect = pygame.Rect(self.x, self.y, self.radius*2, self.radius*2)
+
+    def tick(self, timer):
+        self.timer = timer
+        if self.timer > self.cooldown or self.timer == 0:
+            self.shield_ind_image = pygame.transform.scale(pygame.image.load("sprites/shield.png"), (self.radius, self.radius))
+            self.shield_ind_image.fill((0, 255, 0), special_flags=pygame.BLEND_ADD)
+        else:
+            self.shield_ind_image = pygame.transform.scale(pygame.image.load("sprites/shield.png"), (self.radius, self.radius))
+            self.shield_ind_image.fill((255, 0, 0), special_flags=pygame.BLEND_ADD)
+
     def render(self, screen):
-        pygame.draw.polygon(screen, (255, 255, 255), ((self.x, self.y),
-                                                      (math.cos(self.angle), math.sin(self.angle)),
-                                                      (math.cos(self.angle) * self.x, math.sin(self.angle))))
+        progress = self.timer/self.cooldown
+        angle = 2 * math.pi * progress
+
+        pygame.draw.arc(screen, (0, 153, 51), self.arc_rect, 0, angle, self.radius)
+        screen.blit(self.shield_ind_image, self.shield_ind_rect)
